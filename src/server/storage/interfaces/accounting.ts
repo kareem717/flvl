@@ -2,11 +2,10 @@ import type {
   PlaidBankAccount,
   CreatePlaidBankAccountParams,
   CreatePlaidTransactionParams,
-  UpdatePlaidBankAccountParams,
   PlaidTransaction,
   CreateQuickBooksInvoiceParams,
   QuickBooksInvoice,
-} from "../../entities";
+} from "@/lib/db/types";
 
 export interface IAccountingRepository {
   upsertBankAccount(

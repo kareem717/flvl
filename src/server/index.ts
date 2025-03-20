@@ -1,8 +1,9 @@
 import { j } from "./jstack"
 import { authRouter } from "./handlers/auth-handler"
-import { accountingRouter } from "./handlers/accounting-handler"
+import { accountingHandler } from "./handlers/accounting-handler"
 import { companyRouter } from "./handlers/company-handler"
 import { webhookRouter } from "./handlers/webhook-handler"
+import { cors } from "hono/cors"
 /**
  * This is your base API.
  * Here, you can handle errors, not-found responses, cors and more.
@@ -12,7 +13,13 @@ import { webhookRouter } from "./handlers/webhook-handler"
 const api = j
   .router()
   .basePath("/api")
-  .use(j.defaults.cors)
+  .use(cors({
+    origin: ["http://localhost:3000", process.env.NEXT_PUBLIC_APP_URL || ""],
+    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowHeaders: ["Content-Type", "Authorization", "x-is-superjson"],
+    credentials: true,
+    exposeHeaders: ["*"],
+  }))
   .onError(j.defaults.errorHandler)
 
 /**
@@ -22,7 +29,7 @@ const api = j
 const appRouter = j.mergeRouters(api, {
   auth: authRouter,
   company: companyRouter,
-  accounting: accountingRouter,
+  accounting: accountingHandler,
   webhooks: webhookRouter,
 })
 

@@ -12,6 +12,6 @@ export class AuthService implements IAuthService {
   }
 
   async getAccountByUserId(userId: string) {
-    return await this.accountRepo.getByUserId(userId);
+    return (await this.accountRepo.getByUserId(userId)) || null;
   }
 }

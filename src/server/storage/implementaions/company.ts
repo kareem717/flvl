@@ -75,6 +75,10 @@ export class CompanyRepository implements ICompanyRepository {
       .values({ ...params, companyId })
       .returning();
 
+    if (!data) {
+      throw new Error("Failed to create Plaid credentials");
+    }
+
     return data;
   }
 
@@ -102,6 +106,10 @@ export class CompanyRepository implements ICompanyRepository {
       .from(plaidCredentials)
       .where(eq(plaidCredentials.itemId, itemId))
       .limit(1);
+
+    if (!data) {
+      throw new Error("Failed to get Plaid credentials");
+    }
 
     return data;
   }
@@ -183,6 +191,10 @@ export class CompanyRepository implements ICompanyRepository {
       .from(quickBooksOauthStates)
       .where(eq(quickBooksOauthStates.state, state))
       .limit(1);
+
+    if (!data) {
+      throw new Error("Failed to get QuickBooks OAuth state");
+    }
 
     return data;
   }

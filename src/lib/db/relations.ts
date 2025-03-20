@@ -9,18 +9,9 @@ import {
   quickBooksOauthStates,
   quickBooksInvoices,
 } from "./schema";
-import { users as usersInAuth } from "./auth-schem";
 
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
-  usersInAuth: one(usersInAuth, {
-    fields: [accounts.userId],
-    references: [usersInAuth.id],
-  }),
   companies: many(companies),
-}));
-
-export const usersInAuthRelations = relations(usersInAuth, ({ many }) => ({
-  accounts: many(accounts),
 }));
 
 export const companiesRelations = relations(companies, ({ one, many }) => ({

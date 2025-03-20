@@ -3,19 +3,6 @@ import { Configuration, PlaidApi, PlaidEnvironments } from "plaid"
 import * as jose from "jose"
 import { createHash, createHmac } from "crypto"
 
-// Type definition for Plaid verification key
-interface PlaidVerificationKey {
-  alg: string
-  crv: string
-  kid: string
-  kty: string
-  use: string
-  x: string
-  y: string
-  created_at: number
-  expired_at: number | null
-}
-
 async function verifyPlaidWebhook(
   jwt: string,
   body: string,
@@ -138,7 +125,7 @@ export const webhookRouter = j.router({
     return c.json({ success: true })
   }),
 
-  quickbooks: publicProcedure.post(async ({ c, ctx }) => {
+  "quick-books": publicProcedure.post(async ({ c, ctx }) => {
     const { service } = ctx
     const signature = c.req.header("intuit-signature")
 

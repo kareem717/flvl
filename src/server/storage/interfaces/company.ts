@@ -8,7 +8,7 @@ import type {
   QuickBooksOauthState,
   UpdateQuickBooksOauthCredentialParams,
   CreateQuickBooksOauthCredentialParams,
-} from "../../entities";
+} from "@/lib/db/types";
 
 export interface ICompanyRepository {
   create(account: CreateCompanyParams, ownerId: number): Promise<Company>;

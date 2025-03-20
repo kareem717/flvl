@@ -17,7 +17,6 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import { users } from "./auth-schem";
 
 export const plaidAccountSubtype = pgEnum("plaid_account_subtype", [
   "401a",
@@ -130,19 +129,15 @@ export const accounts = pgTable(
   "accounts",
   {
     id: serial().primaryKey().notNull(),
-    userId: uuid("user_id").notNull(),
+    userId: text("user_id").notNull(),
     email: varchar({ length: 360 }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
   },
   (table) => [
-    foreignKey({
-      columns: [table.userId],
-      foreignColumns: [users.id],
-      name: "accounts_user_id_fkey",
-    }),
+    index("accounts_user_id_idx").on(table.userId),
   ],
 );
 
@@ -156,7 +151,7 @@ export const companies = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
   },
   (table) => [
     foreignKey({
@@ -177,7 +172,7 @@ export const plaidCredentials = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
   },
   (table) => [
     foreignKey({
@@ -206,7 +201,7 @@ export const plaidBankAccounts = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
   },
   (table) => [
     foreignKey({
@@ -253,7 +248,7 @@ export const plaidTransactions = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
   },
   (table) => [
     index("plaid_transactions_bank_account_id_idx").using(
@@ -290,7 +285,7 @@ export const quickBooksOauthCredentials = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
   },
   (table) => [
     foreignKey({
@@ -332,7 +327,7 @@ export const quickBooksInvoices = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
   },
   (table) => [
     foreignKey({

@@ -1,4 +1,4 @@
-import type { Account, CreateAccountParams } from "../../entities";
+import type { Account, CreateAccountParams } from "@/lib/db/types";
 
 export interface IAccountRepository {
   getByUserId(id: string): Promise<Account | undefined>;

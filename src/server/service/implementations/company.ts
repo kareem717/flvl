@@ -291,7 +291,7 @@ export class CompanyService implements ICompanyService {
         CompanyService.QUICK_BOOKS_OAUTH_TOKEN_URL,
         new URLSearchParams({
           grant_type: "refresh_token",
-          refreshToken: creds.refreshToken,
+          refresh_token: creds.refreshToken,
         }).toString(),
         {
           headers: {
@@ -539,7 +539,7 @@ export class CompanyService implements ICompanyService {
           CompanyService.QUICK_BOOKS_OAUTH_TOKEN_URL,
           new URLSearchParams({
             grant_type: "refresh_token",
-            refreshToken: credentials.refreshToken,
+            refresh_token: credentials.refreshToken,
           }),
           {
             headers: {

@@ -9,6 +9,7 @@ export const client = createClient<AppRouter>({
   baseUrl: getBaseUrl(),
 })
 
+client.accounting.companyBankAccounts
 function getBaseUrl() {
   // 👇 In production, use the production worker
   if (process.env.NODE_ENV === "production") {

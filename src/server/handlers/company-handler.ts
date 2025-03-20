@@ -48,10 +48,10 @@ export const companyRouter = j.router({
     }),
 
   createPlaidLinkToken: accountProcedure
-    .input(intIdSchema)
-    .mutation(async ({ ctx, c, input }) => {
+    .input(z.object({ companyId: intIdSchema }))
+    .mutation(async ({ ctx, c, input: { companyId } }) => {
       const { service, account } = ctx
-      const company = await service.company.getById(input)
+      const company = await service.company.getById(companyId)
 
       if (company.ownerId !== account.id) {
         throw new HTTPException(403, {
@@ -89,26 +89,28 @@ export const companyRouter = j.router({
       return c.json({ url })
     }),
 
-  quickBooksCallback: publicProcedure
-    .input(z.object({
-      code: z.string(),
-      state: z.string(),
-      realmId: z.string()
-    }))
-    .mutation(async ({ ctx, c, input }) => {
+  "quick-books-callback": publicProcedure
+    .query(async ({ ctx, c }) => {
+      const { realmId, code, state } = c.req.query()
+      if (!realmId || !code || !state) {
+        throw new HTTPException(400, {
+          message: `Missing required parameters: ${!realmId ? "realmId" : ""} ${!code ? "code" : ""} ${!state ? "state" : ""}`
+        })
+      }
+
       const { service } = ctx
-      const { redirect_url, company_id } = await service.company.completeQuickBooksOAuthFlow(input)
+      const { redirect_url, company_id } = await service.company.completeQuickBooksOAuthFlow({ realmId, code, state })
 
       await service.company.syncQuickBooksInvoices(company_id)
       return c.redirect(redirect_url)
     }),
 
   getById: accountProcedure
-    .input(intIdSchema)
-    .query(async ({ ctx, c, input }) => {
+    .input(z.object({ companyId: intIdSchema }))
+    .query(async ({ ctx, c, input: { companyId } }) => {
       const { service, account } = ctx
 
-      const company = await service.company.getById(input)
+      const company = await service.company.getById(companyId)
 
       if (company.ownerId !== account.id) {
         throw new HTTPException(403, {
@@ -120,11 +122,11 @@ export const companyRouter = j.router({
     }),
 
   deletePlaidCredentials: accountProcedure
-    .input(intIdSchema)
-    .mutation(async ({ ctx, c, input }) => {
+    .input(z.object({ companyId: intIdSchema }))
+    .mutation(async ({ ctx, c, input: { companyId } }) => {
       const { service, account } = ctx
 
-      const company = await service.company.getById(input)
+      const company = await service.company.getById(companyId)
       if (!company) {
         throw new HTTPException(404, {
           message: "Linked account not found"
@@ -141,8 +143,8 @@ export const companyRouter = j.router({
     }),
 
   deleteCompany: accountProcedure
-    .input(intIdSchema)
-    .mutation(async ({ ctx, c, input }) => {
+    .input(z.object({ companyId: intIdSchema }))
+    .mutation(async ({ ctx, c, input: { companyId } }) => {
       const { service, account } = ctx
 
       if (!account) {
@@ -151,7 +153,7 @@ export const companyRouter = j.router({
         })
       }
 
-      const company = await service.company.getById(input)
+      const company = await service.company.getById(companyId)
       if (!company) {
         throw new HTTPException(404, {
           message: "Linked account not found"
@@ -172,9 +174,9 @@ export const companyRouter = j.router({
       companyId: intIdSchema,
       publicToken: z.string()
     }))
-    .mutation(async ({ ctx, c, input }) => {
+    .mutation(async ({ ctx, c, input: { companyId, publicToken } }) => {
       const { service, account } = ctx
-      const company = await service.company.getById(input.companyId)
+      const company = await service.company.getById(companyId)
 
       if (company.ownerId !== account.id) {
         throw new HTTPException(403, {
@@ -184,7 +186,7 @@ export const companyRouter = j.router({
 
       const { itemId } = await service.company.createPlaidCredentials({
         companyId: company.id,
-        publicToken: input.publicToken
+        publicToken
       })
 
       await service.company.syncPlaidBankAccounts(itemId)
