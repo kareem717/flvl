@@ -11,16 +11,16 @@ import { auth } from "@clerk/nextjs/server";
 import { client } from "@/lib/client";
 import { redirect } from "next/navigation";
 import { redirects } from "@/lib/config/redirects";
+import { getTokenCached } from "@/app/actions/auth";
 
 export default async function RootDashboardLayout({
   children,
 }: { children: ReactNode }) {
-  const { getToken } = await auth();
-  const token = await getToken()
+  const token = await getTokenCached()
   if (!token) {
-    return redirect(redirects.auth.login)
+    redirect(redirects.auth.login)
   }
-
+  
   const bearerToken = `Bearer ${token}` 
 
   const req = await client.auth.getAccountByUserId.$get(undefined, {

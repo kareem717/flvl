@@ -1,21 +1,22 @@
 import { client } from "@/lib/client";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { redirects } from "@/lib/config/redirects";
+import { getTokenCached } from "@/app/actions/auth";
 
 export default async function BankAccountTransactionsPage({
   params,
 }: { params: Promise<{ id: string; accountId: string }> }) {
   const { accountId } = await params;
-  const { getToken } = await auth();
-  const token = await getToken()
+  const token = await getTokenCached()
   if (!token) {
     return redirect(redirects.auth.login)
   }
 
+  const bearerToken = `Bearer ${token}`
+
   const req = await client.accounting.getTransactionsByBankAccountId.$get({ bankAccountId: accountId }, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: bearerToken,
     },
   })
 

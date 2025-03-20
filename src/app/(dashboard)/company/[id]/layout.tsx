@@ -9,9 +9,9 @@ import type { ReactNode } from "react";
 import { CompanyProvider } from "@/components/providers/company-provider";
 import { Companiesidebar } from "./components/company-sidebar";
 import { client } from "@/lib/client";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { redirects } from "@/lib/config/redirects";
+import { getTokenCached } from "@/app/actions/auth";
 
 export default async function CompanyLayout({
   children,
@@ -20,7 +20,11 @@ export default async function CompanyLayout({
   children: ReactNode;
   params: Promise<{ id: string }>;
 }) {
-  const { getToken } = await auth()
+  const token = await getTokenCached()
+  if (!token) {
+    return redirect(redirects.auth.login)
+  }
+
   const { id } = await params;
   const parsedId = Number.parseInt(id, 10);
 
@@ -28,14 +32,11 @@ export default async function CompanyLayout({
     return notFound();
   }
 
-  const token = await getToken()
-  if (!token) {
-    return redirect(redirects.auth.login)
-  }
+  const bearerToken = `Bearer ${token}`
 
   const resp = await client.company.getByAccountId.$get(undefined, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: bearerToken,
     },
   })
 

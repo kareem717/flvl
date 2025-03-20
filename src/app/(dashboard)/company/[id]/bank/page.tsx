@@ -3,22 +3,24 @@ import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { client } from "@/lib/client";
-import { auth } from "@clerk/nextjs/server";
+import { getTokenCached } from "@/app/actions/auth";
 import { redirect } from "next/navigation";
+
 export default async function BankAccountsPage({
   params,
 }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const companyId = Number.parseInt(id, 10);
-  const { getToken } = await auth();
-  const token = await getToken()
+  const token = await getTokenCached()
   if (!token) {
     return redirect(redirects.auth.login)
   }
 
+  const bearerToken = `Bearer ${token}`
+
   const req = await client.accounting.companyBankAccounts.$get({ companyId }, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: bearerToken,
     },
   });
   const bankAccounts = await req.json();

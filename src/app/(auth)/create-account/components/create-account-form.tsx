@@ -15,14 +15,14 @@ import type { ComponentPropsWithoutRef } from "react";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { CreateAccountParamsSchema } from "@/lib/db/validators";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { redirects } from "@/lib/config/redirects";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { client } from "@/lib/client";
-import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
+import { getTokenCached } from "@/app/actions/auth";
 
 interface CreateAccountFormProps
   extends Omit<ComponentPropsWithoutRef<"form">, "onSubmit"> {
@@ -39,22 +39,19 @@ export function CreateAccountForm({
   ...props
 }: CreateAccountFormProps) {
   const router = useRouter();
-  const { getToken } = useAuth();
-
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (values: CreateAccountFormValues) => {
-      const token = await getToken()
-      if (!token) {
-        throw new Error("No token found")
+      const bearerToken = await getTokenCached();
+      if (!bearerToken) {
+        redirect(redirects.auth.login);
       }
 
       const result = await client.auth.createAccount.$post(values, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${bearerToken}`,
         },
       });
-      console.log("result", result)
       return await result.json();
     },
     onSuccess: (result) => {

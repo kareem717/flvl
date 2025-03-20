@@ -11,18 +11,20 @@ import { StoreIcon } from "lucide-react";
 import { CreateCompanyDialog } from "./components/create-company-dialog";
 import { SearchCommand } from "./components/search-command";
 import { client } from "@/lib/client";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { getTokenCached } from "@/app/actions/auth";
+
 export default async function DashboardPage() {
-  const { getToken } = await auth();
-  const token = await getToken()
+  const token = await getTokenCached()
   if (!token) {
     return redirect(redirects.auth.login)
   }
 
+  const bearerToken = `Bearer ${token}`
+
   const req = await client.company.getByAccountId.$get(undefined, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: bearerToken,
     },
   });
   

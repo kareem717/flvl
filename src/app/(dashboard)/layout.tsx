@@ -5,21 +5,19 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { HTTPException } from "hono/http-exception";
 import { Account } from "@/lib/db/types";
+import { getTokenCached } from "../actions/auth";
 
 export default async function DashboardLayout({
   children,
 }: { children: React.ReactNode }) {
-  const { getToken } = await auth()
-
-  let account: Account | null = null
-  let bearerToken: string | null = null
-
-  const token = await getToken()
-  if (token) {
-    bearerToken = `Bearer ${token}`
-  } else {
+  const token = await getTokenCached()
+  console.log("token", token)
+  if (!token) {
     redirect(redirects.auth.login)
   }
+  const bearerToken = `Bearer ${token}`
+
+  let account: Account | null = null
 
   try {
     const resp = await client.auth.getAccountByUserId.$get(undefined, {

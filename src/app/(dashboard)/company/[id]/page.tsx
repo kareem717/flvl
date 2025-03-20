@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { client } from "@/lib/client";
-import { auth } from "@clerk/nextjs/server";
 import { redirects } from "@/lib/config/redirects";
+import { getTokenCached } from "@/app/actions/auth";
 
 export default async function CompanyPage({
   params,
@@ -9,9 +9,7 @@ export default async function CompanyPage({
   const { id } = await params;
   const parsedId = Number.parseInt(id, 10);
 
-  const { getToken } = await auth()
-
-  const token = await getToken()
+  const token = await getTokenCached()
   if (!token) {
     return redirect(redirects.auth.login)
   }

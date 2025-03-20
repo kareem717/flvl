@@ -1,8 +1,8 @@
 import { client } from "@/lib/client";
 import { ReconciliationClient } from "./components/reconciliation-client";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { redirects } from "@/lib/config/redirects";
+import { getTokenCached } from "@/app/actions/auth";
 
 // Server Component - receives params directly from Next.js
 export default async function ReconciliationPage({
@@ -11,8 +11,7 @@ export default async function ReconciliationPage({
   const { id } = await params;
   const companyId = Number.parseInt(id, 10);
 
-  const { getToken } = await auth();
-  const token = await getToken()
+  const token = await getTokenCached();
   if (!token) {
     return redirect(redirects.auth.login)
   }
