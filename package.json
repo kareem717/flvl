@@ -15,18 +15,27 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.2.7",
+    "@clerk/backend": "^1.25.3",
+    "@clerk/nextjs": "^6.12.6",
     "@neondatabase/serverless": "^0.10.4",
     "@tailwindcss/postcss": "^4.0.0",
     "@tanstack/react-query": "^5.51.23",
+    "ai": "^4.1.64",
+    "axios": "^1.8.4",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.39.0",
+    "drizzle-zod": "^0.7.0",
     "hono": "^4.7.0",
+    "jose": "^6.0.10",
     "jstack": "^1.0.8",
     "next": "^15.1.6",
+    "plaid": "^31.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "superjson": "^2.2.1",
     "tailwind-merge": "^2.5.2",
+    "uuid": "^11.1.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {

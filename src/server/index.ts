@@ -1,6 +1,8 @@
 import { j } from "./jstack"
-import { postRouter } from "./routers/post-router"
-
+import { authRouter } from "./handlers/auth-handler"
+import { accountingRouter } from "./handlers/accounting-handler"
+import { companyRouter } from "./handlers/company-handler"
+import { webhookRouter } from "./handlers/webhook-handler"
 /**
  * This is your base API.
  * Here, you can handle errors, not-found responses, cors and more.
@@ -9,6 +11,7 @@ import { postRouter } from "./routers/post-router"
  */
 const api = j
   .router()
+  .basePath("/api")
   .use(j.defaults.cors)
   .onError(j.defaults.errorHandler)
 
@@ -17,7 +20,10 @@ const api = j
  * All routers in /server/routers should be added here manually.
  */
 const appRouter = j.mergeRouters(api, {
-  post: postRouter,
+  auth: authRouter,
+  company: companyRouter,
+  accounting: accountingRouter,
+  webhooks: webhookRouter,
 })
 
 export type AppRouter = typeof appRouter
