@@ -9,7 +9,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "dev": "next dev",
-    "wrangler:dev": "wrangler dev",
+    "wrangler:dev": "sh copy_env.sh && wrangler dev",
     "wrangler:deploy": "wrangler deploy",
     "lint": "next lint",
     "start": "next start"
