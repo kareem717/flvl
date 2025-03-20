@@ -9,7 +9,6 @@ import { postRouter } from "./routers/post-router"
  */
 const api = j
   .router()
-  .basePath("/api")
   .use(j.defaults.cors)
   .onError(j.defaults.errorHandler)
 

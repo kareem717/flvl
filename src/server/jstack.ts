@@ -4,7 +4,10 @@ import { env } from "hono/adapter"
 import { jstack } from "jstack"
 
 interface Env {
-  Bindings: { DATABASE_URL: string }
+  Bindings: {
+    DATABASE_URL: string,
+    BACKEND_URL: string
+  }
 }
 
 export const j = jstack.init<Env>()
