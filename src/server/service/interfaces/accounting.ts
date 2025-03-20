@@ -137,4 +137,14 @@ export interface IAccountingService {
     companyId: number,
     params: { start_date: string; end_date: string },
   ): Promise<CashFlowReport>;
+
+  /**
+   * Fetch an invoice by its ID
+   */
+  getInvoice(invoiceId: number): Promise<Invoice>;
+
+  /**
+   * Fetch invoices for a company
+   */
+  getInvoiceByCompanyId(companyId: number): Promise<Invoice[]>;
 }

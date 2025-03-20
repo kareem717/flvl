@@ -434,4 +434,16 @@ export class AccountingService implements IAccountingService {
       return 0;
     }
   }
+
+  async getInvoice(invoiceId: number): Promise<Invoice> {
+    const invoice = await this.accountingRepo.getInvoiceById(invoiceId);
+    if (!invoice) {
+      throw new Error(`Invoice not found: ${invoiceId}`);
+    }
+    return invoice;
+  }
+
+  async getInvoiceByCompanyId(companyId: number): Promise<Invoice[]> {
+    return await this.accountingRepo.getInvoicesByCompanyId(companyId);
+  }
 }

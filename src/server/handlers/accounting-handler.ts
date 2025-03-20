@@ -55,4 +55,20 @@ export const accountingHandler = j.router({
 
       return c.superjson(transactions);
     }),
+  getInvoice: accountProcedure
+    .input(z.object({ invoiceId: intIdSchema }))
+    .query(async ({ ctx, c, input: { invoiceId } }) => {
+      const { service, account } = ctx
+      const invoice = await service.accounting.getInvoice(invoiceId);
+
+      return c.superjson(invoice);
+    }),
+  getInvoices: accountProcedure
+    .input(z.object({ companyId: intIdSchema }))
+    .query(async ({ ctx, c, input: { companyId } }) => {
+      const { service, account } = ctx
+      const invoices = await service.accounting.getInvoiceByCompanyId(companyId);
+
+      return c.superjson(invoices);
+    }),
 })
