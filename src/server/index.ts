@@ -14,7 +14,7 @@ const api = j
   .router()
   .basePath("/api")
   .use(cors({
-    origin: ["http://localhost:3000", process.env.NEXT_PUBLIC_APP_URL || ""],
+    origin: ["http://localhost:3000", "https://app.fundlevel.co", "*"],
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowHeaders: ["Content-Type", "Authorization", "x-is-superjson"],
     credentials: true,

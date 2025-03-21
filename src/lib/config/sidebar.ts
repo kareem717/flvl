@@ -5,6 +5,7 @@ import {
   LayoutGrid,
   LogOut,
   Plug,
+  Receipt,
 } from "lucide-react";
 import { redirects } from "./redirects";
 import type { ElementType } from "react";
@@ -71,18 +72,29 @@ const companyDashboard = (id: number): NavigationMenu[] => [
     ],
   },
   {
-    name: "Bank Accounts",
+    name: "Banking",
     path: redirects.app.company(id).root,
     items: [
       {
-        title: "View All",
+        title: "Bank Accounts",
         url: redirects.app.company(id).bank.root,
         icon: Landmark,
       },
       {
-        title: "Reconcile",
+        title: "Reconcile Transactions",
         url: redirects.app.company(id).bank.reconciliation,
         icon: Check,
+      },
+    ],
+  },
+  {
+    name: "Accounting",
+    path: redirects.app.company(id).root,
+    items: [
+      {
+        title: "Invoices",
+        url: redirects.app.company(id).accounting.invoices,
+        icon: Receipt,
       },
     ],
   },

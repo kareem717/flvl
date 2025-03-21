@@ -1,7 +1,6 @@
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { client } from "@/lib/client";
 import { redirects } from "@/lib/config/redirects";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { HTTPException } from "hono/http-exception";
 import { Account } from "@/lib/db/types";
@@ -11,7 +10,6 @@ export default async function DashboardLayout({
   children,
 }: { children: React.ReactNode }) {
   const token = await getTokenCached()
-  console.log("token", token)
   if (!token) {
     redirect(redirects.auth.login)
   }

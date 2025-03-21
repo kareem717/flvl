@@ -31,6 +31,11 @@ export const redirects = {
         transactions: (accountId: string) =>
           companyPrefix(id, `bank/${accountId}/transactions`),
       },
+      accounting: {
+        invoices: companyPrefix(id, "invoices"),
+        invoice: (invoiceId: string) =>
+          companyPrefix(id, `invoices/${invoiceId}`),
+      },
       settings: {
         root: companyPrefix(id, "settings"),
         general: companyPrefix(id, "settings/general"),
