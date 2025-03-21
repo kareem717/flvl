@@ -8,8 +8,13 @@ import {
   quickBooksOauthCredentials,
   quickBooksOauthStates,
   quickBooksInvoices,
+  quickBooksJournalEntries,
+  quickBooksVendorCredits,
+  quickBooksCreditNotes,
+  quickBooksPayments,
+  quickBooksAccounts,
+  quickBooksTransactions,
 } from "./schema";
-import { z } from "zod";
 
 // Account schemas
 export const AccountSchema = createSelectSchema(accounts);
@@ -65,4 +70,46 @@ export const QuickBooksInvoiceSchema = createSelectSchema(quickBooksInvoices);
 export const CreateQuickBooksInvoiceParamsSchema = createInsertSchema(quickBooksInvoices)
   .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
 export const UpdateQuickBooksInvoiceParamsSchema = createUpdateSchema(quickBooksInvoices)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+
+// QuickBooksJournalEntry schemas
+export const QuickBooksJournalEntrySchema = createSelectSchema(quickBooksJournalEntries);
+export const CreateQuickBooksJournalEntryParamsSchema = createInsertSchema(quickBooksJournalEntries)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+export const UpdateQuickBooksJournalEntryParamsSchema = createUpdateSchema(quickBooksJournalEntries)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+
+// QuickBooksVendorCredit schemas   
+export const QuickBooksVendorCreditSchema = createSelectSchema(quickBooksVendorCredits);
+export const CreateQuickBooksVendorCreditParamsSchema = createInsertSchema(quickBooksVendorCredits)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+export const UpdateQuickBooksVendorCreditParamsSchema = createUpdateSchema(quickBooksVendorCredits)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+
+// QuickBooksCreditNote schemas
+export const QuickBooksCreditNoteSchema = createSelectSchema(quickBooksCreditNotes);
+export const CreateQuickBooksCreditNoteParamsSchema = createInsertSchema(quickBooksCreditNotes)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+export const UpdateQuickBooksCreditNoteParamsSchema = createUpdateSchema(quickBooksCreditNotes)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+
+// QuickBooksPayment schemas
+export const QuickBooksPaymentSchema = createSelectSchema(quickBooksPayments);
+export const CreateQuickBooksPaymentParamsSchema = createInsertSchema(quickBooksPayments)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+export const UpdateQuickBooksPaymentParamsSchema = createUpdateSchema(quickBooksPayments)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+
+// QuickBooksAccount schemas
+export const QuickBooksAccountSchema = createSelectSchema(quickBooksAccounts);
+export const CreateQuickBooksAccountParamsSchema = createInsertSchema(quickBooksAccounts)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+export const UpdateQuickBooksAccountParamsSchema = createUpdateSchema(quickBooksAccounts)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+
+// QuickBooksTransaction schemas
+export const QuickBooksTransactionSchema = createSelectSchema(quickBooksTransactions);
+export const CreateQuickBooksTransactionParamsSchema = createInsertSchema(quickBooksTransactions)
+  .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });
+export const UpdateQuickBooksTransactionParamsSchema = createUpdateSchema(quickBooksTransactions)
   .omit({ id: true, createdAt: true, updatedAt: true, companyId: true });

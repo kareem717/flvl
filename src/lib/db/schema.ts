@@ -338,3 +338,135 @@ export const quickBooksInvoices = pgTable(
     unique("quick_books_invoices_remote_id_key").on(table.remoteId),
   ],
 );
+
+export const quickBooksTransactions = pgTable(
+  "quick_books_transactions",
+  {
+    id: serial().primaryKey().notNull(),
+    companyId: integer("company_id").notNull(),
+    remoteId: text("remote_id").notNull(),
+    content: jsonb().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: "quick_books_transactions_company_id_fkey",
+    }),
+    unique("quick_books_transactions_remote_id_key").on(table.remoteId),
+  ],
+);
+
+export const quickBooksJournalEntries = pgTable(
+  "quick_books_journal_entries",
+  {
+    id: serial().primaryKey().notNull(),
+    companyId: integer("company_id").notNull(),
+    remoteId: text("remote_id").notNull(),
+    content: jsonb().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: "quick_books_transactions_company_id_fkey",
+    }),
+    unique("quick_books_transactions_remote_id_key").on(table.remoteId),
+  ],
+);
+
+export const quickBooksVendorCredits = pgTable(
+  "quick_books_vendor_credits",
+  {
+    id: serial().primaryKey().notNull(),
+    companyId: integer("company_id").notNull(),
+    remoteId: text("remote_id").notNull(),
+    content: jsonb().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: "quick_books_vendor_credits_company_id_fkey",
+    }),
+    unique("quick_books_vendor_credits_remote_id_key").on(table.remoteId),
+  ],
+);
+
+export const quickBooksCreditNotes = pgTable(
+  "quick_books_credit_notes",
+  {
+    id: serial().primaryKey().notNull(),
+    companyId: integer("company_id").notNull(),
+    remoteId: text("remote_id").notNull(),
+    content: jsonb().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: "quick_books_credit_notes_company_id_fkey",
+    }),
+    unique("quick_books_credit_notes_remote_id_key").on(table.remoteId),
+  ],
+);
+
+export const quickBooksPayments = pgTable(
+  "quick_books_payments",
+  {
+    id: serial().primaryKey().notNull(),
+    companyId: integer("company_id").notNull(),
+    remoteId: text("remote_id").notNull(),
+    content: jsonb().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: "quick_books_payments_company_id_fkey",
+    }),
+    unique("quick_books_payments_remote_id_key").on(table.remoteId),
+  ],
+);
+
+export const quickBooksAccounts = pgTable(
+  "quick_books_accounts",
+  {
+    id: serial().primaryKey().notNull(),
+    companyId: integer("company_id").notNull(),
+    remoteId: text("remote_id").notNull(),
+    content: jsonb().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "string" }).$onUpdateFn(() => new Date().toISOString()),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.companyId],
+      foreignColumns: [companies.id],
+      name: "quick_books_accounts_company_id_fkey",
+    }),
+    unique("quick_books_accounts_remote_id_key").on(table.remoteId),
+  ],
+);

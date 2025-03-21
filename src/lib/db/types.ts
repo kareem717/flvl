@@ -8,6 +8,12 @@ import type {
   quickBooksOauthCredentials,
   quickBooksOauthStates,
   quickBooksInvoices,
+  quickBooksCreditNotes,
+  quickBooksPayments,
+  quickBooksAccounts,
+  quickBooksJournalEntries,
+  quickBooksVendorCredits,
+  quickBooksTransactions,
 } from "./schema";
 
 export type Company = InferSelectModel<typeof companies>;
@@ -70,11 +76,56 @@ export type UpdateQuickBooksOauthStateParams =
 
 export type QuickBooksInvoice = InferSelectModel<typeof quickBooksInvoices>;
 export type CreateQuickBooksInvoiceParams = Omit<
-  InferInsertModel<typeof quickBooksInvoices>,
+  OmitEntityFields<InferInsertModel<typeof quickBooksInvoices>>,
   "companyId"
 >;
 export type UpdateQuickBooksInvoiceParams =
   Partial<CreateQuickBooksInvoiceParams>;
+
+export type QuickBooksCreditNote = InferSelectModel<typeof quickBooksCreditNotes>;
+export type CreateQuickBooksCreditNoteParams = Omit<
+  OmitEntityFields<InferInsertModel<typeof quickBooksCreditNotes>>,
+  "companyId"
+>;
+export type UpdateQuickBooksCreditNoteParams =
+  Partial<CreateQuickBooksCreditNoteParams>;
+
+export type QuickBooksPayment = InferSelectModel<typeof quickBooksPayments>;
+export type CreateQuickBooksPaymentParams = Omit<
+  OmitEntityFields<InferInsertModel<typeof quickBooksPayments>>,
+  "companyId"
+>;
+export type UpdateQuickBooksPaymentParams = Partial<CreateQuickBooksPaymentParams>;
+
+export type QuickBooksAccount = InferSelectModel<typeof quickBooksAccounts>;
+export type CreateQuickBooksAccountParams = Omit<
+  OmitEntityFields<InferInsertModel<typeof quickBooksAccounts>>,
+  "companyId"
+>;
+export type UpdateQuickBooksAccountParams = Partial<CreateQuickBooksAccountParams>;
+
+export type QuickBooksJournalEntry = InferSelectModel<typeof quickBooksJournalEntries>;
+export type CreateQuickBooksJournalEntryParams = Omit<
+  OmitEntityFields<InferInsertModel<typeof quickBooksJournalEntries>>,
+  "companyId"
+>;
+export type UpdateQuickBooksJournalEntryParams = Partial<CreateQuickBooksJournalEntryParams>;
+
+export type QuickBooksVendorCredit = InferSelectModel<typeof quickBooksVendorCredits>;
+export type CreateQuickBooksVendorCreditParams = Omit<
+  OmitEntityFields<InferInsertModel<typeof quickBooksVendorCredits>>,
+  "companyId" 
+>;
+export type UpdateQuickBooksVendorCreditParams = Partial<CreateQuickBooksVendorCreditParams>;
+
+export type QuickBooksTransaction = InferSelectModel<typeof quickBooksTransactions>;
+export type CreateQuickBooksTransactionParams = Omit<
+  OmitEntityFields<InferInsertModel<typeof quickBooksTransactions>>,
+  "companyId"
+>;
+export type UpdateQuickBooksTransactionParams = Partial<CreateQuickBooksTransactionParams>;
+
+
 
 // utils
 type TimeStampFields = {
