@@ -1,11 +1,11 @@
 import type { Account, CreateAccountParams } from "@/lib/db/types";
 import type { IAccountRepository } from "../interfaces";
-import type { DB } from "@/lib/db/client";
+import type { IDB } from "../index";
 import { accounts } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export class AccountRepository implements IAccountRepository {
-  constructor(private readonly db: DB) { }
+  constructor(private readonly db: IDB) { }
 
   async getByUserId(id: string): Promise<Account | undefined> {
     const [data] = await this.db

@@ -4,7 +4,7 @@ import type {
   PlaidCredential,
   QuickBooksOauthCredential,
 } from "@/lib/db/types";
-
+import { SyncJobType } from "@/lib/types";
 export interface ICompanyService {
   getById(id: number): Promise<Company>;
   getByAccountId(accountId: number): Promise<Company[]>;
@@ -24,8 +24,12 @@ export interface ICompanyService {
     publicToken: string;
   }): Promise<PlaidCredential>;
 
-  syncPlaidBankAccounts(itemId: string): Promise<void>;
-  syncPlaidTransactions(itemId: string): Promise<void>;
+  /**
+   * Get Plaid credentials for a company
+   * @param companyId The company ID
+   * @returns Array of Plaid credentials
+   */
+  getPlaidCredentials(companyId: number): Promise<PlaidCredential>;
 
   startQuickBooksOAuthFlow(
     companyId: number,
@@ -44,5 +48,13 @@ export interface ICompanyService {
     company_id: number;
   }>;
 
-  syncQuickBooksInvoices(companyId: number): Promise<void>;
+  syncAccountingAccounts(companyId: number): Promise<void>;
+  syncBankAccounts(companyId: number): Promise<void>;
+  syncAccountingTransactions(companyId: number): Promise<void>;
+  syncBankTransactions(companyId: number): Promise<void>;
+  syncInvoices(companyId: number): Promise<void>;
+  syncJournalEntries(companyId: number): Promise<void>;
+  syncVendorCredits(companyId: number): Promise<void>;
+  syncCreditNotes(companyId: number): Promise<void>;
+  syncPayments(companyId: number): Promise<void>;
 }

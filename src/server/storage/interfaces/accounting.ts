@@ -20,16 +20,22 @@ import type {
 } from "@/lib/db/types";
 
 export interface IAccountingRepository {
+  // Plaid Bank Account methods
   upsertBankAccount(
-    params: CreatePlaidBankAccountParams,
+    bankAccount: CreatePlaidBankAccountParams[],
     companyId: number,
-  ): Promise<PlaidBankAccount>;
+  ): Promise<PlaidBankAccount[]>;
   getBankAccountByRemoteId(id: string): Promise<PlaidBankAccount>;
   getBankAccountsByCompanyId(companyId: number): Promise<PlaidBankAccount[]>;
-  deleteBankAccount(id: string): Promise<void>;
+  updateBankAccount(
+    remoteId: string,
+    bankAccount: Partial<CreatePlaidBankAccountParams>,
+  ): Promise<PlaidBankAccount>;
+  deleteBankAccount(remoteId: string): Promise<void>;
 
+  // Plaid Transaction methods
   upsertTransaction(
-    params: CreatePlaidTransactionParams | CreatePlaidTransactionParams[],
+    transaction: CreatePlaidTransactionParams[],
     companyId: number,
   ): Promise<void>;
   getTransactionById(id: string): Promise<PlaidTransaction | undefined>;
@@ -38,65 +44,72 @@ export interface IAccountingRepository {
   ): Promise<PlaidTransaction[]>;
   deleteTransaction(id: string | string[]): Promise<void>;
 
+  // QuickBooks Invoice methods
   upsertInvoice(
-    params: CreateQuickBooksInvoiceParams,
+    invoice: CreateQuickBooksInvoiceParams[],
     companyId: number,
-  ): Promise<QuickBooksInvoice>;
+  ): Promise<QuickBooksInvoice[]>;
   getInvoiceById(id: number): Promise<QuickBooksInvoice | undefined>;
   getInvoicesByCompanyId(companyId: number): Promise<QuickBooksInvoice[]>;
   deleteInvoiceByRemoteId(remoteId: string | string[]): Promise<void>;
 
   // QuickBooks Account methods
   upsertAccount(
-    params: CreateQuickBooksAccountParams,
+    account: CreateQuickBooksAccountParams[],
     companyId: number,
-  ): Promise<QuickBooksAccount>;
+  ): Promise<QuickBooksAccount[]>;
   getAccountById(id: number): Promise<QuickBooksAccount | undefined>;
   getAccountsByCompanyId(companyId: number): Promise<QuickBooksAccount[]>;
   deleteAccountByRemoteId(remoteId: string | string[]): Promise<void>;
 
   // QuickBooks Credit Note methods
   upsertCreditNote(
-    params: CreateQuickBooksCreditNoteParams,
+    creditNote: CreateQuickBooksCreditNoteParams[],
     companyId: number,
-  ): Promise<QuickBooksCreditNote>;
+  ): Promise<QuickBooksCreditNote[]>;
   getCreditNoteById(id: number): Promise<QuickBooksCreditNote | undefined>;
   getCreditNotesByCompanyId(companyId: number): Promise<QuickBooksCreditNote[]>;
   deleteCreditNoteByRemoteId(remoteId: string | string[]): Promise<void>;
 
   // QuickBooks Journal Entry methods
   upsertJournalEntry(
-    params: CreateQuickBooksJournalEntryParams,
+    journalEntry: CreateQuickBooksJournalEntryParams[],
     companyId: number,
-  ): Promise<QuickBooksJournalEntry>;
+  ): Promise<QuickBooksJournalEntry[]>;
   getJournalEntryById(id: number): Promise<QuickBooksJournalEntry | undefined>;
-  getJournalEntriesByCompanyId(companyId: number): Promise<QuickBooksJournalEntry[]>;
+  getJournalEntriesByCompanyId(
+    companyId: number,
+  ): Promise<QuickBooksJournalEntry[]>;
   deleteJournalEntryByRemoteId(remoteId: string | string[]): Promise<void>;
 
   // QuickBooks Payment methods
   upsertPayment(
-    params: CreateQuickBooksPaymentParams,
+    payment: CreateQuickBooksPaymentParams[],
     companyId: number,
-  ): Promise<QuickBooksPayment>;
+  ): Promise<QuickBooksPayment[]>;
   getPaymentById(id: number): Promise<QuickBooksPayment | undefined>;
   getPaymentsByCompanyId(companyId: number): Promise<QuickBooksPayment[]>;
   deletePaymentByRemoteId(remoteId: string | string[]): Promise<void>;
 
   // QuickBooks Transaction methods
   upsertQbTransaction(
-    params: CreateQuickBooksTransactionParams,
+    transaction: CreateQuickBooksTransactionParams[],
     companyId: number,
-  ): Promise<QuickBooksTransaction>;
+  ): Promise<QuickBooksTransaction[]>;
   getQbTransactionById(id: number): Promise<QuickBooksTransaction | undefined>;
-  getQbTransactionsByCompanyId(companyId: number): Promise<QuickBooksTransaction[]>;
+  getQbTransactionsByCompanyId(
+    companyId: number,
+  ): Promise<QuickBooksTransaction[]>;
   deleteQbTransactionByRemoteId(remoteId: string | string[]): Promise<void>;
 
   // QuickBooks Vendor Credit methods
   upsertVendorCredit(
-    params: CreateQuickBooksVendorCreditParams,
+    vendorCredit: CreateQuickBooksVendorCreditParams[],
     companyId: number,
-  ): Promise<QuickBooksVendorCredit>;
+  ): Promise<QuickBooksVendorCredit[]>;
   getVendorCreditById(id: number): Promise<QuickBooksVendorCredit | undefined>;
-  getVendorCreditsByCompanyId(companyId: number): Promise<QuickBooksVendorCredit[]>;
+  getVendorCreditsByCompanyId(
+    companyId: number,
+  ): Promise<QuickBooksVendorCredit[]>;
   deleteVendorCreditByRemoteId(remoteId: string | string[]): Promise<void>;
 }

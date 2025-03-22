@@ -31,7 +31,6 @@ export const j = jstack.init<Env>()
 
 
 export const withServices = j.middleware(async ({ c, next }) => {
-  console.log(c.env.QUICK_BOOKS_CLIENT_ID)
   const qbConfig = {
     clientId: c.env.QUICK_BOOKS_CLIENT_ID,
     clientSecret: c.env.QUICK_BOOKS_CLIENT_SECRET,

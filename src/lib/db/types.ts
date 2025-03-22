@@ -19,7 +19,7 @@ import type {
 export type Company = InferSelectModel<typeof companies>;
 export type CreateCompanyParams = Omit<
   OmitEntityFields<InferInsertModel<typeof companies>>,
-  "ownerId"
+  "ownerId" | "bankAccountsLastSyncedAt" | "transactionsLastSyncedAt" | "invoicesLastSyncedAt" | "journalEntriesLastSyncedAt" | "vendorCreditsLastSyncedAt" | "creditNotesLastSyncedAt" | "paymentsLastSyncedAt"
 >;
 export type UpdateCompanyParams = Partial<CreateCompanyParams>;
 
@@ -124,8 +124,6 @@ export type CreateQuickBooksTransactionParams = Omit<
   "companyId"
 >;
 export type UpdateQuickBooksTransactionParams = Partial<CreateQuickBooksTransactionParams>;
-
-
 
 // utils
 type TimeStampFields = {

@@ -147,4 +147,5 @@ export interface IAccountingService {
    * Fetch invoices for a company
    */
   getInvoiceByCompanyId(companyId: number): Promise<Invoice[]>;
+
 }

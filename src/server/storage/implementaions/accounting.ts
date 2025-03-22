@@ -30,26 +30,44 @@ import {
   quickBooksTransactions,
   quickBooksVendorCredits
 } from "@/lib/db/schema";
-import type { DB } from "@/lib/db/client";
-import { eq, inArray } from "drizzle-orm";
+import type { DB, Transaction } from "@/lib/db/client";
+import { eq, inArray, sql } from "drizzle-orm";
 export class AccountingRepository implements IAccountingRepository {
-  constructor(private db: DB) { }
+  constructor(private db: DB | Transaction) { }
 
   async upsertBankAccount(
-    bankAccount: CreatePlaidBankAccountParams,
+    bankAccounts: CreatePlaidBankAccountParams[],
     companyId: number,
-  ): Promise<PlaidBankAccount> {
-    const [data] = await this.db
+  ): Promise<PlaidBankAccount[]> {
+    if (bankAccounts.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(plaidBankAccounts)
-      .values({ ...bankAccount, companyId })
+      .values(
+        bankAccounts.map(bankAccount => ({ ...bankAccount, companyId }))
+      )
       .onConflictDoUpdate({
         target: [plaidBankAccounts.remoteId],
-        set: { ...bankAccount },
+        set: {
+          remoteId: sql.raw(`excluded.${plaidBankAccounts.remoteId.name}`),
+          name: sql.raw(`excluded.${plaidBankAccounts.name.name}`),
+          type: sql.raw(`excluded.${plaidBankAccounts.type.name}`),
+          subtype: sql.raw(`excluded.${plaidBankAccounts.subtype.name}`),
+          mask: sql.raw(`excluded.${plaidBankAccounts.mask.name}`),
+          currentBalance: sql.raw(`excluded.${plaidBankAccounts.currentBalance.name}`),
+          availableBalance: sql.raw(`excluded.${plaidBankAccounts.availableBalance.name}`),
+          isoCurrencyCode: sql.raw(`excluded.${plaidBankAccounts.isoCurrencyCode.name}`),
+          unofficialCurrencyCode: sql.raw(`excluded.${plaidBankAccounts.unofficialCurrencyCode.name}`),
+          officialName: sql.raw(`excluded.${plaidBankAccounts.officialName.name}`),
+          remainingRemoteContent: sql.raw(`excluded.${plaidBankAccounts.remainingRemoteContent.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create bank account");
+    if (!data.length) {
+      throw new Error("Failed to create bank accounts");
     }
 
     return data;
@@ -102,12 +120,12 @@ export class AccountingRepository implements IAccountingRepository {
   }
 
   async upsertTransaction(
-    transaction: CreatePlaidTransactionParams | CreatePlaidTransactionParams[],
+    transactions: CreatePlaidTransactionParams[],
     companyId: number,
-  ) {
-    const transactions = Array.isArray(transaction)
-      ? transaction
-      : [transaction];
+  ): Promise<void> {
+    if (transactions.length === 0) {
+      return;
+    }
 
     await this.db.insert(plaidTransactions).values(
       transactions.map((t) => ({ ...t, companyId })),
@@ -142,20 +160,29 @@ export class AccountingRepository implements IAccountingRepository {
   }
 
   async upsertInvoice(
-    invoice: CreateQuickBooksInvoiceParams,
+    invoices: CreateQuickBooksInvoiceParams[],
     companyId: number,
-  ): Promise<QuickBooksInvoice> {
-    const [data] = await this.db
+  ): Promise<QuickBooksInvoice[]> {
+    if (invoices.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(quickBooksInvoices)
-      .values({ ...invoice, companyId })
+      .values(
+        invoices.map(invoice => ({ ...invoice, companyId }))
+      )
       .onConflictDoUpdate({
         target: [quickBooksInvoices.remoteId],
-        set: { ...invoice },
+        set: {
+          remoteId: sql.raw(`excluded.${quickBooksInvoices.remoteId.name}`),  
+          content: sql.raw(`excluded.${quickBooksInvoices.content.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create/update invoice");
+    if (!data.length) {
+      throw new Error("Failed to create/update invoices");
     }
 
     return data;
@@ -188,20 +215,29 @@ export class AccountingRepository implements IAccountingRepository {
 
   // QuickBooks Account methods
   async upsertAccount(
-    account: CreateQuickBooksAccountParams,
+    accounts: CreateQuickBooksAccountParams[],
     companyId: number,
-  ): Promise<QuickBooksAccount> {
-    const [data] = await this.db
+  ): Promise<QuickBooksAccount[]> {
+    if (accounts.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(quickBooksAccounts)
-      .values({ ...account, companyId })
+      .values(
+        accounts.map(account => ({ ...account, companyId }))
+      )
       .onConflictDoUpdate({
         target: [quickBooksAccounts.remoteId],
-        set: { ...account },
+        set: {
+          remoteId: sql.raw(`excluded.${quickBooksAccounts.remoteId.name}`),
+          content: sql.raw(`excluded.${quickBooksAccounts.content.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create/update account");
+    if (!data.length) {
+      throw new Error("Failed to create/update accounts");
     }
 
     return data;
@@ -234,20 +270,29 @@ export class AccountingRepository implements IAccountingRepository {
 
   // QuickBooks Credit Note methods
   async upsertCreditNote(
-    creditNote: CreateQuickBooksCreditNoteParams,
+    creditNotes: CreateQuickBooksCreditNoteParams[],
     companyId: number,
-  ): Promise<QuickBooksCreditNote> {
-    const [data] = await this.db
+  ): Promise<QuickBooksCreditNote[]> {
+    if (creditNotes.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(quickBooksCreditNotes)
-      .values({ ...creditNote, companyId })
+      .values(
+        creditNotes.map(creditNote => ({ ...creditNote, companyId }))
+      )
       .onConflictDoUpdate({
         target: [quickBooksCreditNotes.remoteId],
-        set: { ...creditNote },
+        set: {
+          remoteId: sql.raw(`excluded.${quickBooksCreditNotes.remoteId.name}`),
+          content: sql.raw(`excluded.${quickBooksCreditNotes.content.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create/update credit note");
+    if (!data.length) {
+      throw new Error("Failed to create/update credit notes");
     }
 
     return data;
@@ -280,20 +325,29 @@ export class AccountingRepository implements IAccountingRepository {
 
   // QuickBooks Journal Entry methods
   async upsertJournalEntry(
-    journalEntry: CreateQuickBooksJournalEntryParams,
+    journalEntries: CreateQuickBooksJournalEntryParams[],
     companyId: number,
-  ): Promise<QuickBooksJournalEntry> {
-    const [data] = await this.db
+  ): Promise<QuickBooksJournalEntry[]> {
+    if (journalEntries.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(quickBooksJournalEntries)
-      .values({ ...journalEntry, companyId })
+      .values(
+        journalEntries.map(journalEntry => ({ ...journalEntry, companyId }))
+      )
       .onConflictDoUpdate({
         target: [quickBooksJournalEntries.remoteId],
-        set: { ...journalEntry },
+        set: {
+          remoteId: sql.raw(`excluded.${quickBooksJournalEntries.remoteId.name}`),
+          content: sql.raw(`excluded.${quickBooksJournalEntries.content.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create/update journal entry");
+    if (!data.length) {
+      throw new Error("Failed to create/update journal entries");
     }
 
     return data;
@@ -326,20 +380,29 @@ export class AccountingRepository implements IAccountingRepository {
 
   // QuickBooks Payment methods
   async upsertPayment(
-    payment: CreateQuickBooksPaymentParams,
+    payments: CreateQuickBooksPaymentParams[],
     companyId: number,
-  ): Promise<QuickBooksPayment> {
-    const [data] = await this.db
+  ): Promise<QuickBooksPayment[]> {
+    if (payments.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(quickBooksPayments)
-      .values({ ...payment, companyId })
+      .values(
+        payments.map(payment => ({ ...payment, companyId }))
+      )
       .onConflictDoUpdate({
         target: [quickBooksPayments.remoteId],
-        set: { ...payment },
+        set: {
+          remoteId: sql.raw(`excluded.${quickBooksPayments.remoteId.name}`),
+          content: sql.raw(`excluded.${quickBooksPayments.content.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create/update payment");
+    if (!data.length) {
+      throw new Error("Failed to create/update payments");
     }
 
     return data;
@@ -372,20 +435,29 @@ export class AccountingRepository implements IAccountingRepository {
 
   // QuickBooks Transaction methods
   async upsertQbTransaction(
-    transaction: CreateQuickBooksTransactionParams,
+    transactions: CreateQuickBooksTransactionParams[],
     companyId: number,
-  ): Promise<QuickBooksTransaction> {
-    const [data] = await this.db
+  ): Promise<QuickBooksTransaction[]> {
+    if (transactions.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(quickBooksTransactions)
-      .values({ ...transaction, companyId })
+      .values(
+        transactions.map(transaction => ({ ...transaction, companyId }))
+      )
       .onConflictDoUpdate({
         target: [quickBooksTransactions.remoteId],
-        set: { ...transaction },
+        set: {
+          remoteId: sql.raw(`excluded.${quickBooksTransactions.remoteId.name}`),
+          content: sql.raw(`excluded.${quickBooksTransactions.content.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create/update QuickBooks transaction");
+    if (!data.length) {
+      throw new Error("Failed to create/update QuickBooks transactions");
     }
 
     return data;
@@ -418,20 +490,29 @@ export class AccountingRepository implements IAccountingRepository {
 
   // QuickBooks Vendor Credit methods
   async upsertVendorCredit(
-    vendorCredit: CreateQuickBooksVendorCreditParams,
+    vendorCredits: CreateQuickBooksVendorCreditParams[],
     companyId: number,
-  ): Promise<QuickBooksVendorCredit> {
-    const [data] = await this.db
+  ): Promise<QuickBooksVendorCredit[]> {
+    if (vendorCredits.length === 0) {
+      return [];
+    }
+
+    const data = await this.db
       .insert(quickBooksVendorCredits)
-      .values({ ...vendorCredit, companyId })
+      .values(
+        vendorCredits.map(vendorCredit => ({ ...vendorCredit, companyId }))
+      )
       .onConflictDoUpdate({
         target: [quickBooksVendorCredits.remoteId],
-        set: { ...vendorCredit },
+        set: {
+          remoteId: sql.raw(`excluded.${quickBooksVendorCredits.remoteId.name}`),
+          content: sql.raw(`excluded.${quickBooksVendorCredits.content.name}`),
+        },
       })
       .returning();
 
-    if (!data) {
-      throw new Error("Failed to create/update vendor credit");
+    if (!data.length) {
+      throw new Error("Failed to create/update vendor credits");
     }
 
     return data;

@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception"
 import { z } from "zod"
 import { intIdSchema } from "./shared"
 
+// Create enum for the sync job types that matches the SyncJobType
 export const companyRouter = j.router({
   search: accountProcedure
     .input(z.object({ query: z.string().optional() }))
@@ -99,9 +100,8 @@ export const companyRouter = j.router({
       }
 
       const { service } = ctx
-      const { redirect_url, company_id } = await service.company.completeQuickBooksOAuthFlow({ realmId, code, state })
+      const { redirect_url } = await service.company.completeQuickBooksOAuthFlow({ realmId, code, state })
 
-      await service.company.syncQuickBooksInvoices(company_id)
       return c.redirect(redirect_url)
     }),
 
@@ -184,14 +184,14 @@ export const companyRouter = j.router({
         })
       }
 
-      const { itemId } = await service.company.createPlaidCredentials({
+      const { companyId: recordCompanyId } = await service.company.createPlaidCredentials({
         companyId: company.id,
         publicToken
       })
 
-      await service.company.syncPlaidBankAccounts(itemId)
-      await service.company.syncPlaidTransactions(itemId)
+      service.company.syncBankAccounts(recordCompanyId)
+      service.company.syncBankTransactions(recordCompanyId)
 
       return c.status(204)
-    })
+    }),
 })

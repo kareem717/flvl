@@ -4,6 +4,7 @@ import { accountingHandler } from "./handlers/accounting-handler"
 import { companyRouter } from "./handlers/company-handler"
 import { webhookRouter } from "./handlers/webhook-handler"
 import { cors } from "hono/cors"
+
 /**
  * This is your base API.
  * Here, you can handle errors, not-found responses, cors and more.

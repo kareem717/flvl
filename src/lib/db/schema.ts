@@ -148,6 +148,14 @@ export const companies = pgTable(
     ownerId: integer("owner_id").notNull(),
     name: text().notNull(),
     email: varchar({ length: 360 }).notNull(),
+    bankAccountsLastSyncedAt: timestamp("bank_accounts_last_synced_at", { withTimezone: true, mode: "string" }),
+    transactionsLastSyncedAt: timestamp("transactions_last_synced_at", { withTimezone: true, mode: "string" }),
+    invoicesLastSyncedAt: timestamp("invoices_last_synced_at", { withTimezone: true, mode: "string" }),
+    journalEntriesLastSyncedAt: timestamp("journal_entries_last_synced_at", { withTimezone: true, mode: "string" }),
+    vendorCreditsLastSyncedAt: timestamp("vendor_credits_last_synced_at", { withTimezone: true, mode: "string" }),
+    creditNotesLastSyncedAt: timestamp("credit_notes_last_synced_at", { withTimezone: true, mode: "string" }),
+    paymentsLastSyncedAt: timestamp("payments_last_synced_at", { withTimezone: true, mode: "string" }),
+
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
@@ -377,9 +385,9 @@ export const quickBooksJournalEntries = pgTable(
     foreignKey({
       columns: [table.companyId],
       foreignColumns: [companies.id],
-      name: "quick_books_transactions_company_id_fkey",
+      name: "quick_books_journal_entries_company_id_fkey",
     }),
-    unique("quick_books_transactions_remote_id_key").on(table.remoteId),
+    unique("quick_books_journal_entries_remote_id_key").on(table.remoteId),
   ],
 );
 

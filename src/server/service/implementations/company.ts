@@ -1,5 +1,5 @@
-import type { ICompanyService } from "../interfaces";
-import type { IAccountingRepository, ICompanyRepository } from "@/server/storage/interfaces";
+import { type ICompanyService, } from "../interfaces";
+import { Storage } from "@/server/storage";
 import {
   Configuration,
   PlaidApi,
@@ -17,9 +17,13 @@ import type {
   QuickBooksOauthCredential,
   UpdateQuickBooksOauthCredentialParams,
   CreateQuickBooksOauthCredentialParams,
+  PlaidCredential
 } from "@/lib/db/types";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
+import { IDB } from "@/server/storage";
+import { CompanyRepository } from "@/server/storage/implementaions";
+import { SyncJobType } from "@/lib/types"
 
 export type QuickBooksConfig = {
   clientId: string;
@@ -37,11 +41,9 @@ export type PlaidConfig = {
 
 export class CompanyService implements ICompanyService {
   private plaid;
-  private companyRepo;
-  private accountingRepo;
+  private repo;
   private qbApiBaseUrl: string;
   private static qbStateExpiresInMs = 60 * 5 * 1000; // 5 minutes;
-
   private static QUICK_BOOKS_OAUTH_SCOPES = "com.intuit.quickbooks.accounting";
   private static readonly QUICK_BOOKS_OAUTH_BASE_URL =
     "https://appcenter.intuit.com/connect/oauth2";
@@ -52,14 +54,15 @@ export class CompanyService implements ICompanyService {
 
   private readonly qbConfig: QuickBooksConfig;
   private readonly plaidConfig: PlaidConfig;
+
+  private static readonly SYNC_JOB_NAME = "sync-job";
+
   constructor(
-    companyRepo: ICompanyRepository,
-    accountingRepo: IAccountingRepository,
+    repo: Storage,
     plaidProps: PlaidConfig,
     qbConfig: QuickBooksConfig,
   ) {
-    this.companyRepo = companyRepo;
-    this.accountingRepo = accountingRepo;
+    this.repo = repo;
     this.plaidConfig = plaidProps;
     this.qbConfig = qbConfig;
 
@@ -84,7 +87,6 @@ export class CompanyService implements ICompanyService {
     });
 
     this.plaid = new PlaidApi(plaidConfig);
-    this.companyRepo = companyRepo;
   }
 
   async createPlaidLinkToken({
@@ -117,7 +119,7 @@ export class CompanyService implements ICompanyService {
       })
     ).data;
 
-    const creds = await this.companyRepo.createPlaidCredentials({
+    const creds = await this.repo.company.createPlaidCredentials({
       itemId: item_id,
       accessToken: access_token,
     }, params.companyId);
@@ -125,46 +127,52 @@ export class CompanyService implements ICompanyService {
     return creds;
   }
 
+  async getPlaidCredentials(companyId: number): Promise<PlaidCredential> {
+    // Get company and check for Plaid item id
+    const creds = await this.repo.company.getPlaidCredentialsByCompanyId(companyId);
+    return creds
+  }
+
   async getById(id: number) {
-    return this.companyRepo.getById(id);
+    return this.repo.company.getById(id);
   }
 
   async getByAccountId(accountId: number) {
-    return this.companyRepo.getByAccountId(accountId);
+    return this.repo.company.getByAccountId(accountId);
   }
 
   async getCompanyByQuickBooksRealmId(
     realmId: string,
   ): Promise<Company | undefined> {
-    return this.companyRepo.getCompanyByQuickBooksRealmId(realmId);
+    return this.repo.company.getCompanyByQuickBooksRealmId(realmId);
   }
 
   async searchCompanies(query: string, accountId: number): Promise<Company[]> {
-    return this.companyRepo.searchCompanies(query, accountId);
+    return this.repo.company.searchCompanies(query, accountId);
   }
 
   async create(params: CreateCompanyParams, ownerId: number): Promise<Company> {
-    return this.companyRepo.create(params, ownerId);
+    return this.repo.company.create(params, ownerId);
   }
 
   async deletePlaidCredentials(companyId: number): Promise<void> {
-    await this.companyRepo.deletePlaidCredentials(companyId);
+    await this.repo.company.deletePlaidCredentials(companyId);
   }
 
   async deleteCompany(id: number): Promise<void> {
     try {
-      await this.companyRepo.deleteQuickBooksOAuthCredentials(id);
+      await this.repo.company.deleteQuickBooksOAuthCredentials(id);
     } catch {
       //ignore error
     }
 
-    await this.companyRepo.deleteCompany(id);
+    await this.repo.company.deleteCompany(id);
   }
 
   async startQuickBooksOAuthFlow(companyId: number, redirectUrl: string) {
     try {
       // Clear old states to avoid conflicts
-      await this.companyRepo.deleteQuickBooksOauthStates(companyId);
+      await this.repo.company.deleteQuickBooksOauthStates(companyId);
     } catch {
       //ignore error
     }
@@ -182,7 +190,7 @@ export class CompanyService implements ICompanyService {
     const auth_url = `${CompanyService.QUICK_BOOKS_OAUTH_BASE_URL}/authorize?${params.toString()}`;
 
     // Save the state in the session
-    await this.companyRepo.createQuickBooksOauthState(
+    await this.repo.company.createQuickBooksOauthState(
       {
         state,
         expiresAt: new Date(
@@ -204,7 +212,7 @@ export class CompanyService implements ICompanyService {
   }) {
     const { code, state: callbackState, realmId } = params;
     const { companyId, redirectUrl } =
-      await this.companyRepo.getQuickBooksOauthState(callbackState);
+      await this.repo.company.getQuickBooksOauthState(callbackState);
 
     const response = await axios.post(
       CompanyService.QUICK_BOOKS_OAUTH_TOKEN_URL,
@@ -259,22 +267,37 @@ export class CompanyService implements ICompanyService {
       throw new Error("Invalid response format from QuickBooks API");
     }
 
-    await this.companyRepo.createQuickBooksOAuthCredentials(
-      {
-        realmId: realmId,
-        accessToken: access_token,
-        refreshToken: refresh_token,
-        accessTokenExpiry: new Date(
-          Date.now() + expires_in * 1000,
-        ).toISOString(),
-        refreshTokenExpiry: new Date(
-          Date.now() + x_refresh_token_expires_in * 1000,
-        ).toISOString(),
-      },
-      companyId,
-    );
-    // Doesn't really have to be in a tx
-    await this.companyRepo.deleteQuickBooksOauthStates(companyId);
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const companyRepo = new CompanyRepository(db);
+      await companyRepo.createQuickBooksOAuthCredentials(
+        {
+          realmId: realmId,
+          accessToken: access_token,
+          refreshToken: refresh_token,
+          accessTokenExpiry: new Date(
+            Date.now() + expires_in * 1000,
+          ).toISOString(),
+          refreshTokenExpiry: new Date(
+            Date.now() + x_refresh_token_expires_in * 1000,
+          ).toISOString(),
+        },
+        companyId,
+      );
+
+      // Doesn't really have to be in a tx
+      await companyRepo.deleteQuickBooksOauthStates(companyId);
+    });
+
+    // Execute sync operations asynchronously without blocking
+    Promise.all([
+      this.syncAccountingAccounts(companyId).catch(err => console.error('Error syncing accounts:', err)),
+      this.syncAccountingTransactions(companyId).catch(err => console.error('Error syncing transactions:', err)),
+      this.syncInvoices(companyId).catch(err => console.error('Error syncing invoices:', err)),
+      this.syncJournalEntries(companyId).catch(err => console.error('Error syncing journal entries:', err)),
+      this.syncPayments(companyId).catch(err => console.error('Error syncing payments:', err)),
+      this.syncVendorCredits(companyId).catch(err => console.error('Error syncing vendor credits:', err)),
+      this.syncCreditNotes(companyId).catch(err => console.error('Error syncing credit notes:', err))
+    ]);
 
     return {
       redirect_url: redirectUrl,
@@ -282,11 +305,16 @@ export class CompanyService implements ICompanyService {
     };
   }
 
-  async getQuickBooksOAuthCredentials(companyId: number) {
+  async getQuickBooksOAuthCredentials(companyId: number): Promise<QuickBooksOauthCredential> {
     const creds =
-      await this.companyRepo.getQuickBooksOAuthCredentials(companyId);
+      await this.repo.company.getQuickBooksOAuthCredentials(companyId);
 
-    if (creds.accessTokenExpiry < new Date().toISOString()) {
+    // Check if token is expired or about to expire in the next 5 minutes
+    const now = new Date();
+    const tokenExpirationDate = new Date(creds.accessTokenExpiry);
+    const bufferMs = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+    if (tokenExpirationDate.getTime() - now.getTime() < bufferMs) {
       const response = await axios.post(
         CompanyService.QUICK_BOOKS_OAUTH_TOKEN_URL,
         new URLSearchParams({
@@ -301,7 +329,7 @@ export class CompanyService implements ICompanyService {
               `${this.qbConfig.clientId}:${this.qbConfig.clientSecret}`,
             ).toString("base64")}`,
           },
-        },
+        }
       );
 
       // Update token expiry times
@@ -313,7 +341,7 @@ export class CompanyService implements ICompanyService {
       ).toISOString();
 
       // Update the database with new token data
-      const newRrcord = await this.companyRepo.updateQuickBooksOAuthCredentials(
+      const newRecord = await this.repo.company.updateQuickBooksOAuthCredentials(
         {
           accessToken: response.data.access_token,
           refreshToken: response.data.refresh_token,
@@ -324,7 +352,7 @@ export class CompanyService implements ICompanyService {
       );
 
       // Update the return object with fresh data
-      return newRrcord;
+      return newRecord;
     }
 
     return creds;
@@ -332,7 +360,7 @@ export class CompanyService implements ICompanyService {
 
   async deleteQuickBooksOAuthCredentials(companyId: number): Promise<void> {
     const creds =
-      await this.companyRepo.getQuickBooksOAuthCredentials(companyId);
+      await this.repo.company.getQuickBooksOAuthCredentials(companyId);
 
     await axios.post(
       CompanyService.QUICK_BOOKS_OAUTH_REVOKE_URL,
@@ -350,80 +378,204 @@ export class CompanyService implements ICompanyService {
       },
     );
 
-    await this.companyRepo.deleteQuickBooksOAuthCredentials(companyId);
+    await this.repo.company.deleteQuickBooksOAuthCredentials(companyId);
   }
 
-  async syncPlaidBankAccounts(itemId: string) {
-    const creds = await this.companyRepo.getPlaidCredentialsByItemId(itemId);
+  async syncInvoices(companyId: number): Promise<void> {
+    const response = await this.queryQuickbooks(companyId, 'SELECT * FROM Invoice');
+    const invoices = response.Invoice || [];
 
-    const plaidResp = await this.plaid.accountsGet({
-      access_token: creds.accessToken,
+    // Map to our format
+    const invoiceParams = invoices.map((invoice: any) => ({
+      remoteId: invoice.Id,
+      content: invoice,
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (invoiceParams.length > 0) {
+        await repo.accounting.upsertInvoice(invoiceParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.QUICKBOOKS_INVOICES, companyId);
+    });
+  }
+
+  async syncAccountingAccounts(companyId: number): Promise<void> {
+    const response = await this.queryQuickbooks(companyId, 'SELECT * FROM Account');
+    const accounts = response.Account || [];
+
+    // Map to our format
+    const accountParams = accounts.map((account: any) => ({
+      remoteId: account.Id,
+      content: account,
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (accountParams.length > 0) {
+        await repo.accounting.upsertAccount(accountParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.PLAID_BANK_ACCOUNTS, companyId);
+    });
+  }
+
+  async syncCreditNotes(companyId: number): Promise<void> {
+    const response = await this.queryQuickbooks(companyId, 'SELECT * FROM CreditMemo');
+    const creditNotes = response.CreditMemo || [];
+
+    // Map to our format
+    const creditNoteParams = creditNotes.map((creditNote: any) => ({
+      remoteId: creditNote.Id,
+      content: creditNote,
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (creditNoteParams.length > 0) {
+        await repo.accounting.upsertCreditNote(creditNoteParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.QUICKBOOKS_CREDIT_NOTES, companyId);
+    });
+  }
+
+  async syncJournalEntries(companyId: number): Promise<void> {
+    // Fetch journal entries from QuickBooks
+    const response = await this.queryQuickbooks(companyId, 'SELECT * FROM JournalEntry');
+
+    // Process the data
+    const journalEntries = response.JournalEntry || [];
+
+    // Map to our format
+    const journalEntryParams = journalEntries.map((journalEntry: any) => ({
+      remoteId: journalEntry.Id,
+      content: journalEntry,
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (journalEntryParams.length > 0) {
+        await repo.accounting.upsertJournalEntry(journalEntryParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.QUICKBOOKS_JOURNAL_ENTRIES, companyId);
+    });
+  }
+
+  async syncPayments(companyId: number): Promise<void> {
+    // Fetch payments from QuickBooks
+    const response = await this.queryQuickbooks(companyId, 'SELECT * FROM Payment');
+
+    // Process the data
+    const payments = response.Payment || [];
+
+    // Map to our format
+    const paymentParams = payments.map((payment: any) => ({
+      remoteId: payment.Id,
+      content: payment,
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (paymentParams.length > 0) {
+        await repo.accounting.upsertPayment(paymentParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.QUICKBOOKS_PAYMENTS, companyId);
+    });
+  }
+
+  async syncAccountingTransactions(companyId: number): Promise<void> {
+    // Fetch transactions from QuickBooks
+    const response = await this.queryQuickbooks(companyId, 'SELECT * FROM Purchase');
+
+    // Process the data
+    const transactions = response.Purchase || [];
+
+    // Map to our format
+    const transactionParams = transactions.map((transaction: any) => ({
+      remoteId: transaction.Id,
+      content: transaction,
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (transactionParams.length > 0) {
+        await repo.accounting.upsertQbTransaction(transactionParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.QUICKBOOKS_TRANSACTIONS, companyId);
+    });
+  }
+
+  async syncVendorCredits(companyId: number): Promise<void> {
+    // Fetch vendor credits from QuickBooks
+    const response = await this.queryQuickbooks(companyId, 'SELECT * FROM VendorCredit');
+
+    // Process the data
+    const vendorCredits = response.VendorCredit || [];
+
+    // Map to our format
+    const vendorCreditParams = vendorCredits.map((vendorCredit: any) => ({
+      remoteId: vendorCredit.Id,
+      content: vendorCredit,
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (vendorCreditParams.length > 0) {
+        await repo.accounting.upsertVendorCredit(vendorCreditParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.QUICKBOOKS_VENDOR_CREDITS, companyId);
+    });
+  }
+
+  async syncBankAccounts(companyId: number): Promise<void> {
+    // Get all Plaid items for this company
+    const creds = await this.repo.company.getPlaidCredentialsByCompanyId(companyId);
+    if (!creds) {
+      throw new Error(`Plaid credentials with companyId ${companyId} not found`);
+    }
+
+    // Call the Plaid API to get accounts
+    const accountsResponse = await this.plaid.accountsGet({
+      access_token: creds.accessToken
     });
 
-    const accounts = plaidResp.data.accounts;
-
-    for (const account of accounts) {
-      const {
-        account_id,
-        balances,
-        mask,
-        name,
-        official_name,
-        subtype,
-        type,
-        ...rest
-      } = account;
-      const {
-        current,
-        available,
-        iso_currency_code,
-        unofficial_currency_code,
-        ...restBalances
-      } = balances;
-
-      // Not possible according to plaid docs
-      if (iso_currency_code && unofficial_currency_code) {
-        throw new Error(
-          "Payload contains both iso and unofficial currency code",
-        );
-      }
-
-      // Not possible according to plaid docs
-      if (!iso_currency_code && !unofficial_currency_code) {
-        throw new Error(
-          "Payload contains neither iso nor unofficial currency code",
-        );
-      }
-
-      const remaining_remote_content = JSON.stringify({
-        ...rest,
-        balances: restBalances,
-      });
-
-      await this.accountingRepo.upsertBankAccount(
-        {
-          remoteId: account_id,
-          remainingRemoteContent: remaining_remote_content,
-          currentBalance: current,
-          availableBalance: available,
-          isoCurrencyCode: iso_currency_code,
-          unofficialCurrencyCode: unofficial_currency_code,
-          mask,
-          name,
-          officialName: official_name,
-          subtype,
-          type,
-        },
-        creds.companyId,
-      );
+    if (!accountsResponse?.data?.accounts?.length) {
+      throw new Error(`No accounts found for company ${companyId}`);
     }
+
+    // Process the accounts
+    const accounts = accountsResponse.data.accounts;
+    const bankAccountParams = accounts.map(account => ({
+      name: account.name,
+      type: account.type as any,
+      plaidAccountId: account.account_id,
+      remoteId: account.account_id,
+      remainingRemoteContent: JSON.stringify(account)
+    }));
+
+    // Store in database
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (bankAccountParams.length > 0) {
+        await repo.accounting.upsertBankAccount(bankAccountParams, companyId);
+      }
+      await repo.company.updateLastSyncedAt(SyncJobType.PLAID_BANK_ACCOUNTS, companyId);
+    });
   }
 
-  async syncPlaidTransactions(itemId: string) {
-    const { accessToken, companyId, transactionCursor } =
-      await this.companyRepo.getPlaidCredentialsByItemId(itemId);
+  async syncBankTransactions(companyId: number): Promise<void> {
+    const creds = await this.repo.company.getPlaidCredentialsByCompanyId(companyId);
+    if (!creds) {
+      throw new Error(`Plaid credentials with companyId ${companyId} not found`);
+    }
 
-    let cursor = transactionCursor ?? undefined;
+    let cursor = creds.transactionCursor ?? undefined;
 
     // New transaction updates since "cursor"
     let upsert: Array<Transaction> = [];
@@ -433,7 +585,7 @@ export class CompanyService implements ICompanyService {
     // Iterate through each page of new transaction updates for item
     while (hasMore) {
       const response = await this.plaid.transactionsSync({
-        access_token: accessToken,
+        access_token: creds.accessToken,
         cursor,
       });
       const data = response.data;
@@ -504,131 +656,49 @@ export class CompanyService implements ICompanyService {
       };
     });
 
-    //TODO: THIS IS SUPER UNSAFE, WE NEED TO USE TXN - MIGRATE TO DRIZZLE
-    await this.accountingRepo.upsertTransaction(convertedUpsert, companyId);
-    await this.accountingRepo.deleteTransaction(
-      remove.map((r) => r.transaction_id),
+    await this.repo.runInTransaction(async (db: IDB) => {
+      const repo = new Storage(db);
+      if (convertedUpsert.length > 0) {
+        await repo.accounting.upsertTransaction(convertedUpsert, companyId);
+      }
+
+      if (remove.length > 0) {
+        await repo.accounting.deleteTransaction(
+          remove.map((r) => r.transaction_id),
+        );
+      }
+
+      if (cursor) {
+        await repo.company.updateTransactionCursor(companyId, cursor);
+      }
+
+
+    });
+
+
+  }
+
+  private async queryQuickbooks(companyId: number, query: string) {
+    const credentials = await this.getQuickBooksOAuthCredentials(companyId);
+
+    const response = await axios.get(
+      `${this.qbApiBaseUrl}/v3/company/${credentials.realmId}/query`,
+      {
+        headers: {
+          'Authorization': `Bearer ${credentials.accessToken}`,
+          'Accept': 'application/json'
+        },
+        params: {
+          query,
+          minorversion: 65
+        }
+      }
     );
 
-    if (cursor) {
-      await this.companyRepo.updateTransactionCursor(companyId, cursor);
+    if (!response.data?.QueryResponse) {
+      throw new Error(`No QueryResponse from QuickBooks query for company ${companyId} and statement "${query}"`);
     }
-  }
 
-  async syncQuickBooksInvoices(companyId: number): Promise<void> {
-    try {
-      // Get QuickBooks OAuth credentials for the company
-      const credentials = await this.getQuickBooksOAuthCredentials(companyId);
-
-      if (!credentials) {
-        throw new Error(
-          `No QuickBooks credentials found for company ${companyId}`,
-        );
-      }
-
-      // Check if access token is expired and refresh if needed
-      const now = new Date();
-      const tokenExpirationDate = new Date(credentials.accessTokenExpiry);
-
-      let accessToken = credentials.accessToken;
-
-      // If token is expired or about to expire in the next 5 minutes, refresh it
-      if (tokenExpirationDate.getTime() - now.getTime() < 5 * 60 * 1000) {
-        // Refresh the token
-        const refreshResponse = await axios.post(
-          CompanyService.QUICK_BOOKS_OAUTH_TOKEN_URL,
-          new URLSearchParams({
-            grant_type: "refresh_token",
-            refresh_token: credentials.refreshToken,
-          }),
-          {
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              Authorization: `Basic ${Buffer.from(
-                `${this.qbConfig.clientId}:${this.qbConfig.clientSecret}`,
-              ).toString("base64")}`,
-            },
-          },
-        );
-
-        const refreshData = refreshResponse.data;
-
-        // Update credentials in database
-        await this.companyRepo.updateQuickBooksOAuthCredentials(
-          {
-            accessToken: refreshData.access_token,
-            refreshToken: refreshData.refresh_token,
-            accessTokenExpiry: new Date(
-              Date.now() + refreshData.expires_in * 1000,
-            ).toISOString(),
-            refreshTokenExpiry: new Date(
-              Date.now() + refreshData.x_refresh_token_expires_in * 1000,
-            ).toISOString(),
-          },
-          companyId,
-        );
-
-        accessToken = refreshData.access_token;
-      }
-
-      // Fetch invoices from QuickBooks API
-      const response = await axios.get(
-        `${this.qbApiBaseUrl}/v3/company/${credentials.realmId}/query`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            Accept: "application/json",
-          },
-          params: {
-            query:
-              "SELECT * FROM Invoice WHERE Metadata.LastUpdatedTime > '2000-01-01'",
-            minorversion: 65, // Use appropriate minor version
-          },
-        },
-      );
-
-      const invoicesData = response.data;
-
-      // Process and store invoices
-      if (invoicesData.QueryResponse?.Invoice) {
-        const invoices = invoicesData.QueryResponse.Invoice;
-
-        // Process each invoice
-        for (const invoice of invoices) {
-          await this.accountingRepo.upsertInvoice(
-            {
-              remoteId: invoice.Id,
-              content: invoice, // Store the full invoice response as JSON
-            },
-            companyId,
-          );
-        }
-
-        console.log(
-          `Synced ${invoices.length} invoices for company ${companyId}`,
-        );
-      } else {
-        console.log(`No invoices found for company ${companyId}`);
-      }
-    } catch (error: unknown) {
-      console.error("Error syncing QuickBooks invoices:", error);
-      throw new Error(
-        `Failed to sync QuickBooks invoices: ${(error as Error).message || "Unknown error"}`,
-      );
-    }
-  }
-
-  async updateQuickBooksOAuthCredentials(
-    params: UpdateQuickBooksOauthCredentialParams,
-    companyId: number,
-  ): Promise<QuickBooksOauthCredential> {
-    return this.companyRepo.updateQuickBooksOAuthCredentials(params, companyId);
-  }
-
-  async createQuickBooksOAuthCredentials(
-    params: CreateQuickBooksOauthCredentialParams,
-    companyId: number,
-  ): Promise<QuickBooksOauthCredential> {
-    return this.companyRepo.createQuickBooksOAuthCredentials(params, companyId);
+    return response.data.QueryResponse;
   }
 }

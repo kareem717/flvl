@@ -5,8 +5,9 @@ import type {
   CreateQuickBooksOauthStateParams,
   Company,
   UpdateQuickBooksOauthCredentialParams,
+  UpdateCompanyParams,
 } from "@/lib/db/types";
-import type { DB } from "@/lib/db/client";
+import type { DB, Transaction } from "@/lib/db/client";
 import type { ICompanyRepository } from "../interfaces/company";
 import {
   companies,
@@ -15,9 +16,59 @@ import {
   quickBooksOauthStates,
 } from "@/lib/db/schema";
 import { and, eq, like } from "drizzle-orm";
-export class CompanyRepository implements ICompanyRepository {
-  constructor(private readonly db: DB) { }
+import { SyncJobType } from "@/lib/types";
 
+export class CompanyRepository implements ICompanyRepository {
+  constructor(private readonly db: DB | Transaction) { }
+
+  async updateLastSyncedAt(type: SyncJobType, companyId: number): Promise<Company> {
+    let column
+
+    switch (type) {
+      case SyncJobType.QUICKBOOKS_INVOICES:
+        column = companies.invoicesLastSyncedAt.name
+        break;
+      case SyncJobType.QUICKBOOKS_ACCOUNTS:
+        column = companies.bankAccountsLastSyncedAt.name
+        break;
+      case SyncJobType.QUICKBOOKS_TRANSACTIONS:
+        column = companies.transactionsLastSyncedAt.name
+        break;
+      case SyncJobType.QUICKBOOKS_CREDIT_NOTES:
+        column = companies.creditNotesLastSyncedAt.name
+        break;
+      case SyncJobType.QUICKBOOKS_JOURNAL_ENTRIES:
+        column = companies.journalEntriesLastSyncedAt.name
+        break;
+      case SyncJobType.QUICKBOOKS_PAYMENTS:
+        column = companies.paymentsLastSyncedAt.name
+        break;
+      case SyncJobType.QUICKBOOKS_VENDOR_CREDITS:
+        column = companies.vendorCreditsLastSyncedAt.name
+        break;
+      case SyncJobType.PLAID_BANK_ACCOUNTS:
+        column = companies.bankAccountsLastSyncedAt.name
+        break;
+      case SyncJobType.PLAID_TRANSACTIONS:
+        column = companies.transactionsLastSyncedAt.name
+        break;
+      default:
+        throw new Error(`Unknown sync job type: ${type}`);
+    }
+
+    const [data] = await this.db
+      .update(companies)
+      .set({ [column]: new Date().toISOString() })
+      .where(eq(companies.id, companyId))
+      .returning();
+
+    if (!data) {
+      throw new Error("Failed to update company");
+    }
+
+    return data;
+  }
+  
   async create(params: CreateCompanyParams, ownerId: number) {
     const [data] = await this.db
       .insert(companies)
@@ -105,6 +156,20 @@ export class CompanyRepository implements ICompanyRepository {
       .select()
       .from(plaidCredentials)
       .where(eq(plaidCredentials.itemId, itemId))
+      .limit(1);
+
+    if (!data) {
+      throw new Error("Failed to get Plaid credentials");
+    }
+
+    return data;
+  }
+
+  async getPlaidCredentialsByCompanyId(companyId: number) {
+    const [data] = await this.db
+      .select()
+      .from(plaidCredentials)
+      .where(eq(plaidCredentials.companyId, companyId))
       .limit(1);
 
     if (!data) {

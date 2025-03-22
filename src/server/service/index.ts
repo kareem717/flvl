@@ -12,15 +12,19 @@ import type {
   IAccountingService,
 } from "./interfaces";
 import type { QuickBooksConfig, PlaidConfig } from "./implementations/company";
-
 export class Service {
   readonly auth: IAuthService;
   readonly company: ICompanyService;
   readonly ai: IAIService;
   readonly accounting: IAccountingService;
 
-  constructor(storage: Storage, qbConfig: QuickBooksConfig, plaidConfig: PlaidConfig, openaiKey: string) {
-    const company = new CompanyService(storage.company, storage.accounting, plaidConfig, qbConfig);
+  constructor(
+    storage: Storage,
+    qbConfig: QuickBooksConfig,
+    plaidConfig: PlaidConfig,
+    openaiKey: string
+  ) {
+    const company = new CompanyService(storage, plaidConfig, qbConfig);
     const accounting = new AccountingService(storage.accounting, company, qbConfig.environment);
 
     this.auth = new AuthService(storage.account);

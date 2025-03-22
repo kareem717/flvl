@@ -1,3 +1,4 @@
+import { DB } from "@/lib/db/client";
 import type {
   Company,
   CreateCompanyParams,
@@ -8,13 +9,16 @@ import type {
   QuickBooksOauthState,
   UpdateQuickBooksOauthCredentialParams,
   CreateQuickBooksOauthCredentialParams,
+  UpdateCompanyParams,
 } from "@/lib/db/types";
+import { SyncJobType } from "@/lib/types";
 
 export interface ICompanyRepository {
   create(account: CreateCompanyParams, ownerId: number): Promise<Company>;
   getById(id: number): Promise<Company>;
   getByAccountId(accountId: number): Promise<Company[]>;
   searchCompanies(query: string, accountId: number): Promise<Company[]>;
+  updateLastSyncedAt(type: SyncJobType, companyId: number): Promise<Company>;
 
   createPlaidCredentials(
     params: CreatePlaidCredentialParams,
@@ -22,6 +26,7 @@ export interface ICompanyRepository {
   ): Promise<PlaidCredential>;
   deletePlaidCredentials(companyId: number): Promise<void>;
   getPlaidCredentialsByItemId(itemId: string): Promise<PlaidCredential>;
+  getPlaidCredentialsByCompanyId(companyId: number): Promise<PlaidCredential>;
   updateTransactionCursor(companyId: number, cursor: string): Promise<void>;
   deleteCompany(id: number): Promise<void>;
 
