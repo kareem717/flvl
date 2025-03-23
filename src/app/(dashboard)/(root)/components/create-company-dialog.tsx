@@ -85,7 +85,6 @@ export function CreateCompanyDialog({
     resolver: zodResolver(CreateCompanyParamsSchema),
     defaultValues: {
       name: "",
-      email: "",
     },
   })
 
@@ -138,26 +137,6 @@ export function CreateCompanyDialog({
                     This name will help you identify this linked account, try to
                     use either your company name or the name used on the third
                     party service you want to link.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Organization Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter a name for this connection"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Use either the same email you use on the party services
-                    (i.e. QuickBooks) you want to link.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

@@ -149,7 +149,6 @@ export const companies = pgTable(
     id: serial().primaryKey().notNull(),
     ownerId: integer("owner_id").notNull(),
     name: text().notNull(),
-    email: varchar({ length: 360 }).notNull(),
     bankAccountsLastSyncedAt: timestamp("bank_accounts_last_synced_at", { withTimezone: true, mode: "string" }),
     transactionsLastSyncedAt: timestamp("transactions_last_synced_at", { withTimezone: true, mode: "string" }),
     invoicesLastSyncedAt: timestamp("invoices_last_synced_at", { withTimezone: true, mode: "string" }),
@@ -157,7 +156,6 @@ export const companies = pgTable(
     vendorCreditsLastSyncedAt: timestamp("vendor_credits_last_synced_at", { withTimezone: true, mode: "string" }),
     creditNotesLastSyncedAt: timestamp("credit_notes_last_synced_at", { withTimezone: true, mode: "string" }),
     paymentsLastSyncedAt: timestamp("payments_last_synced_at", { withTimezone: true, mode: "string" }),
-
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
