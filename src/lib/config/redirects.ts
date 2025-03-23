@@ -25,13 +25,13 @@ export const redirects = {
   app: {
     company: (id: number) => ({
       root: companyPrefix(id),
-      reconciliation: companyPrefix(id, "reconciliation"),
-      bank: {
-        root: companyPrefix(id, "bank"),
-        reconciliation: companyPrefix(id, "bank/reconciliation"),
-        transactions: (accountId: string) =>
-          companyPrefix(id, `bank/${accountId}/transactions`),
-      },
+      // reconciliation: companyPrefix(id, "reconciliation"),
+      // bank: {
+      //   root: companyPrefix(id, "bank"),
+      //   reconciliation: companyPrefix(id, "bank/reconciliation"),
+      //   transactions: (accountId: string) =>
+      //     companyPrefix(id, `bank/${accountId}/transactions`),
+      // },
       accounting: {
         invoices: companyPrefix(id, "invoices"),
         invoice: (invoiceId: string) =>

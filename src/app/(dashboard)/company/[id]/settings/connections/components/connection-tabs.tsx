@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LinkQuickBooksButton } from "./link-quick-books-button";
-import { LinkPlaidButton } from "./link-plaid-button";
+// import { LinkPlaidButton } from "./link-plaid-button";
 
 interface ConnectionTabsProps extends ComponentPropsWithoutRef<typeof Tabs> {
   companyId: number;
@@ -30,7 +30,7 @@ export function ConnectionTabs({
 }: ConnectionTabsProps) {
   const [provider, setProvider] = useQueryState("provider", {
     clearOnDefault: true,
-    defaultValue: "plaid",
+    defaultValue: "quickbooks",
   });
   return (
     <Tabs
@@ -39,11 +39,11 @@ export function ConnectionTabs({
       className={cn(className)}
       {...props}
     >
-      <TabsList>
-        <TabsTrigger value="plaid">Plaid</TabsTrigger>
+      <TabsList className="w-full justify-start">
+        {/* <TabsTrigger value="plaid">Plaid</TabsTrigger> */}
         <TabsTrigger value="quickbooks">Quickbooks</TabsTrigger>
       </TabsList>
-      <TabsContent value="plaid" className="space-y-4 mt-4">
+      {/* <TabsContent value="plaid" className="space-y-4 mt-4">
         <Card>
           <CardHeader>
             <CardTitle>Plaid</CardTitle>
@@ -55,7 +55,7 @@ export function ConnectionTabs({
             <LinkPlaidButton companyId={companyId} />
           </CardContent>
         </Card>
-      </TabsContent>
+      </TabsContent> */}
       <TabsContent value="quickbooks" className="mt-4">
         <Card>
           <CardHeader>

@@ -33,7 +33,7 @@ export default async function DashboardPage() {
   return (
     <div className="py-8 mx-auto w-full">
       <div className="mb-6 flex justify-between">
-        <SearchCommand />
+        {/* <SearchCommand /> */}
         <CreateCompanyDialog />
       </div>
       {companies.length > 0 ? (

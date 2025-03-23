@@ -78,22 +78,22 @@ const companyDashboard = (id: number): NavigationMenu[] => [
       },
     ],
   },
-  {
-    name: "Banking",
-    path: redirects.app.company(id).root,
-    items: [
-      {
-        title: "Bank Accounts",
-        url: redirects.app.company(id).bank.root,
-        icon: Landmark,
-      },
-      {
-        title: "Reconcile Transactions",
-        url: redirects.app.company(id).bank.reconciliation,
-        icon: Check,
-      },
-    ],
-  },
+  // {
+  //   name: "Banking",
+  //   path: redirects.app.company(id).root,
+  //   items: [
+  //     {
+  //       title: "Bank Accounts",
+  //       url: redirects.app.company(id).bank.root,
+  //       icon: Landmark,
+  //     },
+  //     {
+  //       title: "Reconcile Transactions",
+  //       url: redirects.app.company(id).bank.reconciliation,
+  //       icon: Check,
+  //     },
+  //   ],
+  // },
   {
     name: "Accounting",
     path: redirects.app.company(id).root,

@@ -48,24 +48,24 @@ export const companyRouter = j.router({
       return c.json(companies)
     }),
 
-  createPlaidLinkToken: accountProcedure
-    .input(z.object({ companyId: intIdSchema }))
-    .mutation(async ({ ctx, c, input: { companyId } }) => {
-      const { service, account } = ctx
-      const company = await service.company.getById(companyId)
+  // createPlaidLinkToken: accountProcedure
+  //   .input(z.object({ companyId: intIdSchema }))
+  //   .mutation(async ({ ctx, c, input: { companyId } }) => {
+  //     const { service, account } = ctx
+  //     const company = await service.company.getById(companyId)
 
-      if (company.ownerId !== account.id) {
-        throw new HTTPException(403, {
-          message: "Forbidden from managing this account"
-        })
-      }
+  //     if (company.ownerId !== account.id) {
+  //       throw new HTTPException(403, {
+  //         message: "Forbidden from managing this account"
+  //       })
+  //     }
 
-      const linkToken = await service.company.createPlaidLinkToken({
-        companyId: company.id
-      })
+  //     const linkToken = await service.company.createPlaidLinkToken({
+  //       companyId: company.id
+  //     })
 
-      return c.json({ linkToken })
-    }),
+  //     return c.json({ linkToken })
+  //   }),
 
   connectQuickBooks: accountProcedure
     .input(z.object({
@@ -121,26 +121,26 @@ export const companyRouter = j.router({
       return c.json(company)
     }),
 
-  deletePlaidCredentials: accountProcedure
-    .input(z.object({ companyId: intIdSchema }))
-    .mutation(async ({ ctx, c, input: { companyId } }) => {
-      const { service, account } = ctx
+  // deletePlaidCredentials: accountProcedure
+  //   .input(z.object({ companyId: intIdSchema }))
+  //   .mutation(async ({ ctx, c, input: { companyId } }) => {
+  //     const { service, account } = ctx
 
-      const company = await service.company.getById(companyId)
-      if (!company) {
-        throw new HTTPException(404, {
-          message: "Linked account not found"
-        })
-      }
+  //     const company = await service.company.getById(companyId)
+  //     if (!company) {
+  //       throw new HTTPException(404, {
+  //         message: "Linked account not found"
+  //       })
+  //     }
 
-      if (company.ownerId !== account.id) {
-        throw new HTTPException(403, {
-          message: "Forbidden from managing this account"
-        })
-      }
+  //     if (company.ownerId !== account.id) {
+  //       throw new HTTPException(403, {
+  //         message: "Forbidden from managing this account"
+  //       })
+  //     }
 
-      await service.company.deletePlaidCredentials(company.id)
-    }),
+  //     await service.company.deletePlaidCredentials(company.id)
+  //   }),
 
   deleteCompany: accountProcedure
     .input(z.object({ companyId: intIdSchema }))
@@ -169,29 +169,29 @@ export const companyRouter = j.router({
       await service.company.deleteCompany(company.id)
     }),
 
-  swapPlaidPublicToken: accountProcedure
-    .input(z.object({
-      companyId: intIdSchema,
-      publicToken: z.string()
-    }))
-    .mutation(async ({ ctx, c, input: { companyId, publicToken } }) => {
-      const { service, account } = ctx
-      const company = await service.company.getById(companyId)
+  // swapPlaidPublicToken: accountProcedure
+  //   .input(z.object({
+  //     companyId: intIdSchema,
+  //     publicToken: z.string()
+  //   }))
+  //   .mutation(async ({ ctx, c, input: { companyId, publicToken } }) => {
+  //     const { service, account } = ctx
+  //     const company = await service.company.getById(companyId)
 
-      if (company.ownerId !== account.id) {
-        throw new HTTPException(403, {
-          message: "Forbidden from managing this company"
-        })
-      }
+  //     if (company.ownerId !== account.id) {
+  //       throw new HTTPException(403, {
+  //         message: "Forbidden from managing this company"
+  //       })
+  //     }
 
-      const { companyId: recordCompanyId } = await service.company.createPlaidCredentials({
-        companyId: company.id,
-        publicToken
-      })
+  //     const { companyId: recordCompanyId } = await service.company.createPlaidCredentials({
+  //       companyId: company.id,
+  //       publicToken
+  //     })
 
-      service.company.syncBankAccounts(recordCompanyId)
-      service.company.syncBankTransactions(recordCompanyId)
+  //     service.company.syncBankAccounts(recordCompanyId)
+  //     service.company.syncBankTransactions(recordCompanyId)
 
-      return c.status(204)
-    }),
+  //     return c.status(204)
+  //   }),
 })
