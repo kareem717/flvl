@@ -55,6 +55,9 @@ export const redirects = {
         payment: (paymentId: string) =>
           companyPrefix(id, `payments/${paymentId}`),
       },
+      ai: {
+        chat: companyPrefix(id, "chat"),
+      },
       settings: {
         root: companyPrefix(id, "settings"),
         general: companyPrefix(id, "settings/general"),

@@ -13,6 +13,7 @@ import {
   FileText,
   ArrowDownUp,
   Wallet,
+  MessageSquare,
 } from "lucide-react";
 import { redirects } from "./redirects";
 import type { ElementType } from "react";
@@ -75,6 +76,17 @@ const companyDashboard = (id: number): NavigationMenu[] => [
         title: "Overview",
         url: redirects.app.company(id).root,
         icon: LayoutGrid,
+      },
+    ],
+  },
+  {
+    name: "AI",
+    path: redirects.app.company(id).ai.chat,
+    items: [
+      {
+        title: "Chat",
+        url: redirects.app.company(id).ai.chat,
+        icon: MessageSquare,
       },
     ],
   },

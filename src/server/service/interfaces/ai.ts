@@ -76,4 +76,9 @@ export interface IAIService {
     invoices: QuickBooksInvoice[],
     accountInfo: PlaidBankAccount,
   ): Promise<ReconciliationResult>;
+
+  chat(
+    messages: Message[],
+    companyId: number,
+  ): Promise<ReadableStream<Uint8Array>>;
 }

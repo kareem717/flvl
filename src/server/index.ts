@@ -3,6 +3,7 @@ import { authRouter } from "./handlers/auth-handler"
 import { accountingHandler } from "./handlers/accounting-handler"
 import { companyRouter } from "./handlers/company-handler"
 import { webhookRouter } from "./handlers/webhook-handler"
+import { aiHandler } from "./handlers/ai-handler"
 import { cors } from "hono/cors"
 
 /**
@@ -32,6 +33,7 @@ const appRouter = j.mergeRouters(api, {
   company: companyRouter,
   accounting: accountingHandler,
   webhooks: webhookRouter,
+  ai: aiHandler,
 })
 
 export type AppRouter = typeof appRouter

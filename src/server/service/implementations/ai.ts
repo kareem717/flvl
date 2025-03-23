@@ -70,6 +70,72 @@ export class AIService implements IAIService {
     });
   }
 
+  async chat(
+    messages: Message[],
+    companyId: number,
+  ): Promise<ReadableStream<Uint8Array>> {
+    const stream = await streamText({
+      model: this.openai('gpt-4o-mini-2024-07-18', { structuredOutputs: true }),
+      toolCallStreaming: true,
+      tools: {
+        getBalanceSheet: tool({
+          description: "A tool for fetching the balance sheet of a company.",
+          parameters: z.object({
+            startDate: z
+              .string()
+              .refine((date) => !!Date.parse(date))
+              .describe("The start date of the report, in YYYY-MM-DD format"),
+            endDate: z
+              .string()
+              .refine((date) => !!Date.parse(date))
+              .describe("The end date of the report, in YYYY-MM-DD format"),
+          }),
+          execute: async ({ startDate: start_date, endDate: end_date }) =>
+            await this.accountingService.getBalanceSheet(companyId, {
+              start_date,
+              end_date,
+            }),
+        }),
+        getProfitLoss: tool({
+          description:
+            "A tool for fetching the profit and loss report of a company.",
+          parameters: z.object({
+            startDate: z
+              .string()
+              .refine((date) => !!Date.parse(date))
+              .describe("The start date of the report, in YYYY-MM-DD format"),
+            endDate: z
+              .string()
+              .refine((date) => !!Date.parse(date))
+              .describe("The end date of the report, in YYYY-MM-DD format"),
+          }),
+          execute: async ({ startDate: start_date, endDate: end_date }) =>
+            await this.accountingService.getProfitLoss(companyId, {
+              start_date,
+              end_date,
+            }),
+        }),
+      },
+      maxSteps: 10,
+      system: `
+        You are a CFO at a company. You are analyzing the balance sheet of the company.
+        You are always talking about the current year, which is from ${new Date().getFullYear() - 1} to ${new Date().getFullYear()}.
+        Your goal is to provide clear, actionable insights from the balance sheet.
+
+        Focus on key metrics like:
+        1. Current ratio (current assets / current liabilities)
+        2. Debt-to-equity ratio
+        3. Asset turnover ratio
+        4. Return on assets
+
+        Highlight notable changes in assets, liabilities, and equity compared to previous periods.
+        Provide context and clear explanations of what these numbers mean for the business.
+        `,
+      messages,
+    })
+    return stream.toDataStream();;
+  }
+
   /**
    * Analyze a company's balance sheet with custom tools
    */
