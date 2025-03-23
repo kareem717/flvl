@@ -23,7 +23,7 @@ async function verifyPlaidWebhook(
     }
 
     console.log(`Fetching new verification key for key ID: ${keyId}`)
-  
+
     let key = null
     try {
       const response = await plaidApi.webhookVerificationKeyGet({
@@ -104,13 +104,13 @@ export const webhookRouter = j.router({
       switch (webhookType) {
         case "ITEM": {
           if (webhookCode === "NEW_ACCOUNTS_AVAILABLE") {
-            await service.company.syncPlaidBankAccounts(payload.item_id)
+            await service.company.syncBankAccounts(payload.item_id)
           }
           break
         }
         case "TRANSACTIONS": {
           if (webhookCode === "SYNC_UPDATES_AVAILABLE") {
-            await service.company.syncPlaidTransactions(payload.item_id)
+            await service.company.syncBankTransactions(payload.item_id)
           }
           break
         }
@@ -171,7 +171,7 @@ export const webhookRouter = j.router({
               continue
             }
 
-            await service.company.syncQuickBooksInvoices(company.id)
+            await service.company.syncInvoices(company.id)
             console.log(`Successfully synced invoices for company ${company.id}`)
           }
         }

@@ -2,7 +2,13 @@ import type { IAccountingService } from "../interfaces/accounting";
 import type {
   PlaidTransaction as BankTransaction,
   PlaidBankAccount as BankAccount,
-  QuickBooksInvoice as Invoice
+  QuickBooksInvoice as Invoice,
+  QuickBooksAccount,
+  QuickBooksTransaction,
+  QuickBooksJournalEntry,
+  QuickBooksVendorCredit,
+  QuickBooksCreditNote,
+  QuickBooksPayment
 } from "@/lib/db/types";
 import type {
   BalanceSheetReport,
@@ -434,7 +440,6 @@ export class AccountingService implements IAccountingService {
       return 0;
     }
   }
-
   async getInvoice(invoiceId: number): Promise<Invoice> {
     const invoice = await this.accountingRepo.getInvoiceById(invoiceId);
     if (!invoice) {
@@ -443,7 +448,79 @@ export class AccountingService implements IAccountingService {
     return invoice;
   }
 
-  async getInvoiceByCompanyId(companyId: number): Promise<Invoice[]> {
+  async getInvoicesByCompanyId(companyId: number): Promise<Invoice[]> {
     return await this.accountingRepo.getInvoicesByCompanyId(companyId);
+  }
+
+  async getAccountingAccount(id: number): Promise<QuickBooksAccount> {
+    const account = await this.accountingRepo.getAccountById(id);
+    if (!account) {
+      throw new Error(`Account not found: ${id}`);
+    }
+    return account;
+  }
+
+  async getAccountingAccountsByCompanyId(companyId: number): Promise<QuickBooksAccount[]> {
+    return await this.accountingRepo.getAccountsByCompanyId(companyId);
+  }
+
+  async getAccountingTransaction(id: number): Promise<QuickBooksTransaction> {
+    const transaction = await this.accountingRepo.getQbTransactionById(id);
+    if (!transaction) {
+      throw new Error(`Transaction not found: ${id}`);
+    }
+    return transaction;
+  }
+
+  async getAccountingTransactionsByCompanyId(companyId: number): Promise<QuickBooksTransaction[]> {
+    return await this.accountingRepo.getQbTransactionsByCompanyId(companyId);
+  }
+
+  async getJournalEntry(id: number): Promise<QuickBooksJournalEntry> {
+    const journalEntry = await this.accountingRepo.getJournalEntryById(id);
+    if (!journalEntry) {
+      throw new Error(`Journal entry not found: ${id}`);
+    }
+    return journalEntry;
+  }
+
+  async getJournalEntriesByCompanyId(companyId: number): Promise<QuickBooksJournalEntry[]> {
+    return await this.accountingRepo.getJournalEntriesByCompanyId(companyId);
+  }
+
+  async getVendorCredit(id: number): Promise<QuickBooksVendorCredit> {
+    const vendorCredit = await this.accountingRepo.getVendorCreditById(id);
+    if (!vendorCredit) {
+      throw new Error(`Vendor credit not found: ${id}`);
+    }
+    return vendorCredit;
+  }
+
+  async getVendorCreditsByCompanyId(companyId: number): Promise<QuickBooksVendorCredit[]> {
+    return await this.accountingRepo.getVendorCreditsByCompanyId(companyId);
+  }
+
+  async getCreditNote(id: number): Promise<QuickBooksCreditNote> {
+    const creditNote = await this.accountingRepo.getCreditNoteById(id);
+    if (!creditNote) {
+      throw new Error(`Credit note not found: ${id}`);
+    }
+    return creditNote;
+  }
+
+  async getCreditNotesByCompanyId(companyId: number): Promise<QuickBooksCreditNote[]> {
+    return await this.accountingRepo.getCreditNotesByCompanyId(companyId);
+  }
+
+  async getPayment(id: number): Promise<QuickBooksPayment> {
+    const payment = await this.accountingRepo.getPaymentById(id);
+    if (!payment) {
+      throw new Error(`Payment not found: ${id}`);
+    }
+    return payment;
+  }
+
+  async getPaymentsByCompanyId(companyId: number): Promise<QuickBooksPayment[]> {
+    return await this.accountingRepo.getPaymentsByCompanyId(companyId);
   }
 }

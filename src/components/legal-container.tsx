@@ -13,8 +13,8 @@ export function LegalContainer({
       {children}
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:hover:text-primary  ">
         By clicking continue, you agree to our{" "}
-        <Link href={redirects.legal.terms}>Terms of Service</Link> and{" "}
-        <Link href={redirects.legal.privacy}>Privacy Policy</Link>.
+        <Link href={redirects.compliance.terms}>Terms of Service</Link> and{" "}
+        <Link href={redirects.compliance.privacy}>Privacy Policy</Link>.
       </div>
     </div>
   );

@@ -7,6 +7,12 @@ import {
   Plug,
   Receipt,
   CloudDownload,
+  BookOpen,
+  ReceiptText,
+  CreditCard,
+  FileText,
+  ArrowDownUp,
+  Wallet,
 } from "lucide-react";
 import { redirects } from "./redirects";
 import type { ElementType } from "react";
@@ -96,6 +102,36 @@ const companyDashboard = (id: number): NavigationMenu[] => [
         title: "Invoices",
         url: redirects.app.company(id).accounting.invoices,
         icon: Receipt,
+      },
+      {
+        title: "Accounts",
+        url: redirects.app.company(id).accounting.accounts,
+        icon: BookOpen,
+      },
+      {
+        title: "Transactions",
+        url: redirects.app.company(id).accounting.transactions,
+        icon: ArrowDownUp,
+      },
+      {
+        title: "Journal Entries",
+        url: redirects.app.company(id).accounting.journalEntries,
+        icon: FileText,
+      },
+      {
+        title: "Vendor Credits",
+        url: redirects.app.company(id).accounting.vendorCredits,
+        icon: ReceiptText,
+      },
+      {
+        title: "Credit Notes",
+        url: redirects.app.company(id).accounting.creditNotes,
+        icon: CreditCard,
+      },
+      {
+        title: "Payments",
+        url: redirects.app.company(id).accounting.payments,
+        icon: Wallet,
       },
     ],
   },

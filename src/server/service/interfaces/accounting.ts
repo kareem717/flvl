@@ -1,7 +1,13 @@
 import type {
   PlaidTransaction as BankTransaction,
   PlaidBankAccount as BankAccount,
-  QuickBooksInvoice as Invoice
+  QuickBooksInvoice as Invoice,
+  QuickBooksTransaction,
+  QuickBooksAccount,
+  QuickBooksVendorCredit,
+  QuickBooksPayment,
+  QuickBooksCreditNote,
+  QuickBooksJournalEntry
 } from "@/lib/db/types";
 
 /**
@@ -138,14 +144,27 @@ export interface IAccountingService {
     params: { start_date: string; end_date: string },
   ): Promise<CashFlowReport>;
 
-  /**
-   * Fetch an invoice by its ID
-   */
   getInvoice(invoiceId: number): Promise<Invoice>;
+  getInvoicesByCompanyId(companyId: number): Promise<Invoice[]>;
 
-  /**
-   * Fetch invoices for a company
-   */
-  getInvoiceByCompanyId(companyId: number): Promise<Invoice[]>;
+  getAccountingAccountsByCompanyId(companyId: number): Promise<QuickBooksAccount[]>;
+  getAccountingAccount(id: number): Promise<QuickBooksAccount>;
 
+  getAccountingTransactionsByCompanyId(companyId: number): Promise<QuickBooksTransaction[]>;
+  getAccountingTransaction(id: number): Promise<QuickBooksTransaction>;
+
+  getInvoicesByCompanyId(companyId: number): Promise<Invoice[]>;
+  getInvoice(id: number): Promise<Invoice>;
+
+  getJournalEntriesByCompanyId(companyId: number): Promise<QuickBooksJournalEntry[]>;
+  getJournalEntry(id: number): Promise<QuickBooksJournalEntry>;
+
+  getVendorCreditsByCompanyId(companyId: number): Promise<QuickBooksVendorCredit[]>;
+  getVendorCredit(id: number): Promise<QuickBooksVendorCredit>;
+
+  getCreditNotesByCompanyId(companyId: number): Promise<QuickBooksCreditNote[]>;
+  getCreditNote(id: number): Promise<QuickBooksCreditNote>;
+
+  getPaymentsByCompanyId(companyId: number): Promise<QuickBooksPayment[]>;
+  getPayment(id: number): Promise<QuickBooksPayment>;
 }

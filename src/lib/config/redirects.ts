@@ -6,9 +6,10 @@ const companyPrefix = (id: number, path?: string) =>
   `${companyRoot}/${id}${path ? `/${path}` : ""}`;
 
 export const redirects = {
-  legal: {
+  compliance: {
     privacy: "/privacy",
     terms: "/terms",
+    eula: "/eula",
   },
   auth: {
     callback: (redirect?: string) =>
@@ -35,6 +36,24 @@ export const redirects = {
         invoices: companyPrefix(id, "invoices"),
         invoice: (invoiceId: string) =>
           companyPrefix(id, `invoices/${invoiceId}`),
+        accounts: companyPrefix(id, "accounts"),
+        account: (accountId: string) =>
+          companyPrefix(id, `accounts/${accountId}`),
+        transactions: companyPrefix(id, "transactions"),
+        transaction: (transactionId: string) =>
+          companyPrefix(id, `transactions/${transactionId}`),
+        journalEntries: companyPrefix(id, "journal-entries"),
+        journalEntry: (journalEntryId: string) =>
+          companyPrefix(id, `journal-entries/${journalEntryId}`),
+        vendorCredits: companyPrefix(id, "vendor-credits"),
+        vendorCredit: (vendorCreditId: string) =>
+          companyPrefix(id, `vendor-credits/${vendorCreditId}`),
+        creditNotes: companyPrefix(id, "credit-notes"),
+        creditNote: (creditNoteId: string) =>
+          companyPrefix(id, `credit-notes/${creditNoteId}`),
+        payments: companyPrefix(id, "payments"),
+        payment: (paymentId: string) =>
+          companyPrefix(id, `payments/${paymentId}`),
       },
       settings: {
         root: companyPrefix(id, "settings"),

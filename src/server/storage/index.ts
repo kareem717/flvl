@@ -28,7 +28,7 @@ export class Storage {
 
   async runInTransaction<T>(fn: (db: IDB) => Promise<T>): Promise<T> {
     return this.db.transaction(async (tx) => {
-      return fn(tx);
+      return fn(tx as IDB);
     });
   }
 }

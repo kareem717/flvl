@@ -175,7 +175,7 @@ export class AccountingRepository implements IAccountingRepository {
       .onConflictDoUpdate({
         target: [quickBooksInvoices.remoteId],
         set: {
-          remoteId: sql.raw(`excluded.${quickBooksInvoices.remoteId.name}`),  
+          remoteId: sql.raw(`excluded.${quickBooksInvoices.remoteId.name}`),
           content: sql.raw(`excluded.${quickBooksInvoices.content.name}`),
         },
       })
@@ -541,5 +541,13 @@ export class AccountingRepository implements IAccountingRepository {
     await this.db
       .delete(quickBooksVendorCredits)
       .where(inArray(quickBooksVendorCredits.remoteId, Array.isArray(remoteId) ? remoteId : [remoteId]));
+  }
+
+  async getInvoice(id: number): Promise<QuickBooksInvoice | undefined> {
+    return this.getInvoiceById(id);
+  }
+
+  async getJournalEntry(id: number): Promise<QuickBooksJournalEntry | undefined> {
+    return this.getJournalEntryById(id);
   }
 }

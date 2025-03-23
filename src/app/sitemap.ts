@@ -10,11 +10,11 @@ if (!BASE_URL) {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     {
-      url: `${BASE_URL}${redirects.legal.privacy}`,
+      url: `${BASE_URL}${redirects.compliance.privacy}`,
       lastModified: new Date(),
     },
     {
-      url: `${BASE_URL}${redirects.legal.terms}`,
+      url: `${BASE_URL}${redirects.compliance.terms}`,
       lastModified: new Date(),
     },
     {

@@ -112,4 +112,12 @@ export interface IAccountingRepository {
     companyId: number,
   ): Promise<QuickBooksVendorCredit[]>;
   deleteVendorCreditByRemoteId(remoteId: string | string[]): Promise<void>;
+
+  getInvoice(id: number): Promise<QuickBooksInvoice | undefined>;
+  getInvoicesByCompanyId(companyId: number): Promise<QuickBooksInvoice[]>;
+
+  getJournalEntry(id: number): Promise<QuickBooksJournalEntry | undefined>;
+  getJournalEntriesByCompanyId(
+    companyId: number,
+  ): Promise<QuickBooksJournalEntry[]>;
 }

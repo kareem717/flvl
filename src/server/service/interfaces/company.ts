@@ -4,7 +4,7 @@ import type {
   PlaidCredential,
   QuickBooksOauthCredential,
 } from "@/lib/db/types";
-import { SyncJobType } from "@/lib/types";
+
 export interface ICompanyService {
   getById(id: number): Promise<Company>;
   getByAccountId(accountId: number): Promise<Company[]>;

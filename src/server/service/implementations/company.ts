@@ -400,7 +400,7 @@ export class CompanyService implements ICompanyService {
       await repo.company.updateLastSyncedAt(SyncJobType.QUICKBOOKS_INVOICES, companyId);
     });
   }
-
+  
   async syncAccountingAccounts(companyId: number): Promise<void> {
     const response = await this.queryQuickbooks(companyId, 'SELECT * FROM Account');
     const accounts = response.Account || [];
