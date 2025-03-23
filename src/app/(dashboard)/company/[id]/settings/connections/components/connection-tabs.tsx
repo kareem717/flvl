@@ -7,7 +7,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { useQueryState } from "nuqs";
+import { parseAsStringEnum, useQueryState } from "nuqs";
 import {
   Card,
   CardContent,
@@ -17,10 +17,17 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LinkQuickBooksButton } from "./link-quick-books-button";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles } from "lucide-react";
 // import { LinkPlaidButton } from "./link-plaid-button";
 
 interface ConnectionTabsProps extends ComponentPropsWithoutRef<typeof Tabs> {
   companyId: number;
+}
+
+enum ConnectionProvider {
+  QUICKBOOKS = "quickbooks",
+  // PLAID = "plaid",
 }
 
 export function ConnectionTabs({
@@ -28,20 +35,29 @@ export function ConnectionTabs({
   companyId,
   ...props
 }: ConnectionTabsProps) {
-  const [provider, setProvider] = useQueryState("provider", {
-    clearOnDefault: true,
-    defaultValue: "quickbooks",
-  });
+  const [provider, setProvider] = useQueryState("provider",
+    parseAsStringEnum<ConnectionProvider>(Object.values(ConnectionProvider))
+      .withDefault(ConnectionProvider.QUICKBOOKS)
+      .withOptions({
+        clearOnDefault: true,
+      }));
+
   return (
     <Tabs
       defaultValue={provider}
-      onValueChange={setProvider}
+      onValueChange={(value) => setProvider(value as ConnectionProvider)}
       className={cn(className)}
       {...props}
     >
       <TabsList className="w-full justify-start">
-        {/* <TabsTrigger value="plaid">Plaid</TabsTrigger> */}
         <TabsTrigger value="quickbooks">Quickbooks</TabsTrigger>
+        <TabsTrigger value="" disabled>
+          Plaid
+          <Badge className="text-xs">
+            <Sparkles className="size-4" />
+            Coming Soon...
+          </Badge>
+        </TabsTrigger>
       </TabsList>
       {/* <TabsContent value="plaid" className="space-y-4 mt-4">
         <Card>
@@ -63,7 +79,7 @@ export function ConnectionTabs({
             <CardDescription>Link your Quickbooks account</CardDescription>
           </CardHeader>
           <CardContent>
-            <LinkQuickBooksButton companyId={companyId} />
+            <LinkQuickBooksButton companyId={companyId} className="w-full" />
           </CardContent>
         </Card>
       </TabsContent>
