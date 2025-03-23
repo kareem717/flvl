@@ -20,7 +20,8 @@ import { redirects } from "@/lib/config/redirects";
 import { ChevronsUpDown, LogOut } from "lucide-react";
 import { ModeToggle } from "@/components/mode-toggle";
 import { useAuth } from "../providers/auth-provider";
-import { Avatar, AvatarFallback } from "@radix-ui/react-avatar";
+import { Avatar } from "@radix-ui/react-avatar";
+import { stringToGradient } from "@/lib/utils";
 
 export function SidebarUser({
   ...props
@@ -34,6 +35,10 @@ export function SidebarUser({
     );
   }
 
+  const avatarStyle = {
+    background: stringToGradient(account.email)
+  };
+
   return (
     <SidebarMenu {...props}>
       <SidebarMenuItem>
@@ -43,12 +48,7 @@ export function SidebarUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg" />
-                {/* {firstName[0]}
-                  {lastName[0]}
-                </AvatarFallback> */}
-              </Avatar>
+              <Avatar className="h-8 w-8 rounded-full" style={avatarStyle} />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 {/* <span className="truncate font-semibold">
                   {firstName} {lastName}
@@ -66,13 +66,7 @@ export function SidebarUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  {/* {avatar && <AvatarImage src={avatar} />} */}
-                  <AvatarFallback className="rounded-lg" />
-                  {/* {firstName[0]}
-                    {lastName[0]}
-                  </AvatarFallback> */}
-                </Avatar>
+                <Avatar className="h-8 w-8 rounded-full" style={avatarStyle} />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   {/* <span className="truncate font-semibold">
                     {firstName} {lastName}
@@ -92,7 +86,7 @@ export function SidebarUser({
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <ModeToggle />
+            <ModeToggle className="w-full" />
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

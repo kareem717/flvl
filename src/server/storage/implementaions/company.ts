@@ -5,9 +5,7 @@ import type {
   CreateQuickBooksOauthStateParams,
   Company,
   UpdateQuickBooksOauthCredentialParams,
-  UpdateCompanyParams,
 } from "@/lib/db/types";
-import type { DB, Transaction } from "@/lib/db/client";
 import type { ICompanyRepository } from "../interfaces/company";
 import {
   companies,
@@ -17,9 +15,10 @@ import {
 } from "@/lib/db/schema";
 import { and, eq, like } from "drizzle-orm";
 import { SyncJobType } from "@/lib/types";
+import { IDB } from "..";
 
 export class CompanyRepository implements ICompanyRepository {
-  constructor(private readonly db: DB | Transaction) { }
+  constructor(private readonly db: IDB) { }
 
   async updateLastSyncedAt(type: SyncJobType, companyId: number): Promise<Company> {
     let column
@@ -55,6 +54,8 @@ export class CompanyRepository implements ICompanyRepository {
       default:
         throw new Error(`Unknown sync job type: ${type}`);
     }
+
+    console.log(`Updating ${column} for company ${companyId} to ${new Date().toISOString()}`);
 
     const [data] = await this.db
       .update(companies)
