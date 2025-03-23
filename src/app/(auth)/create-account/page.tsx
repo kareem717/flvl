@@ -20,7 +20,11 @@ export default async function CreateAccountPage() {
           <CardDescription>Create an account to get started</CardDescription>
         </CardHeader>
         <CardContent>
-          <CreateAccountForm email={user.emailAddresses[0]?.emailAddress} />
+          <CreateAccountForm
+            email={user.emailAddresses[0]?.emailAddress || null}
+            firstName={user.firstName || null}
+            lastName={user.lastName || null}
+          />
         </CardContent>
       </Card>
     </div>

@@ -7,6 +7,8 @@ CREATE TABLE "accounts" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
 	"email" varchar(360) NOT NULL,
+	"first_name" text NOT NULL,
+	"last_name" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone
 );
@@ -16,6 +18,13 @@ CREATE TABLE "companies" (
 	"owner_id" integer NOT NULL,
 	"name" text NOT NULL,
 	"email" varchar(360) NOT NULL,
+	"bank_accounts_last_synced_at" timestamp with time zone,
+	"transactions_last_synced_at" timestamp with time zone,
+	"invoices_last_synced_at" timestamp with time zone,
+	"journal_entries_last_synced_at" timestamp with time zone,
+	"vendor_credits_last_synced_at" timestamp with time zone,
+	"credit_notes_last_synced_at" timestamp with time zone,
+	"payments_last_synced_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone
 );
@@ -74,6 +83,26 @@ CREATE TABLE "plaid_transactions" (
 	CONSTRAINT "plaid_transactions_check" CHECK (((personal_finance_category_primary IS NULL) AND (personal_finance_category_detailed IS NULL)) OR ((personal_finance_category_primary IS NOT NULL) AND (personal_finance_category_detailed IS NOT NULL)))
 );
 --> statement-breakpoint
+CREATE TABLE "quick_books_accounts" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"company_id" integer NOT NULL,
+	"remote_id" text NOT NULL,
+	"content" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	CONSTRAINT "quick_books_accounts_remote_id_key" UNIQUE("remote_id")
+);
+--> statement-breakpoint
+CREATE TABLE "quick_books_credit_notes" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"company_id" integer NOT NULL,
+	"remote_id" text NOT NULL,
+	"content" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	CONSTRAINT "quick_books_credit_notes_remote_id_key" UNIQUE("remote_id")
+);
+--> statement-breakpoint
 CREATE TABLE "quick_books_invoices" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"company_id" integer NOT NULL,
@@ -82,6 +111,16 @@ CREATE TABLE "quick_books_invoices" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone,
 	CONSTRAINT "quick_books_invoices_remote_id_key" UNIQUE("remote_id")
+);
+--> statement-breakpoint
+CREATE TABLE "quick_books_journal_entries" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"company_id" integer NOT NULL,
+	"remote_id" text NOT NULL,
+	"content" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	CONSTRAINT "quick_books_journal_entries_remote_id_key" UNIQUE("remote_id")
 );
 --> statement-breakpoint
 CREATE TABLE "quick_books_oauth_credentials" (
@@ -103,12 +142,48 @@ CREATE TABLE "quick_books_oauth_states" (
 	"expires_at" timestamp with time zone NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "companies" ADD CONSTRAINT "companies_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "public"."accounts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "plaid_bank_accounts" ADD CONSTRAINT "plaid_bank_accounts_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "plaid_credentials" ADD CONSTRAINT "plaid_credentials_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "plaid_transactions" ADD CONSTRAINT "plaid_transactions_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "quick_books_invoices" ADD CONSTRAINT "quick_books_invoices_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "quick_books_oauth_credentials" ADD CONSTRAINT "quick_books_oauth_credentials_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "quick_books_oauth_states" ADD CONSTRAINT "quick_books_oauth_states_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE TABLE "quick_books_payments" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"company_id" integer NOT NULL,
+	"remote_id" text NOT NULL,
+	"content" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	CONSTRAINT "quick_books_payments_remote_id_key" UNIQUE("remote_id")
+);
+--> statement-breakpoint
+CREATE TABLE "quick_books_transactions" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"company_id" integer NOT NULL,
+	"remote_id" text NOT NULL,
+	"content" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	CONSTRAINT "quick_books_transactions_remote_id_key" UNIQUE("remote_id")
+);
+--> statement-breakpoint
+CREATE TABLE "quick_books_vendor_credits" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"company_id" integer NOT NULL,
+	"remote_id" text NOT NULL,
+	"content" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone,
+	CONSTRAINT "quick_books_vendor_credits_remote_id_key" UNIQUE("remote_id")
+);
+--> statement-breakpoint
+ALTER TABLE "companies" ADD CONSTRAINT "companies_owner_id_fkey" FOREIGN KEY ("owner_id") REFERENCES "public"."accounts"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "plaid_bank_accounts" ADD CONSTRAINT "plaid_bank_accounts_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "plaid_credentials" ADD CONSTRAINT "plaid_credentials_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "plaid_transactions" ADD CONSTRAINT "plaid_transactions_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE restrict ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_accounts" ADD CONSTRAINT "quick_books_accounts_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_credit_notes" ADD CONSTRAINT "quick_books_credit_notes_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_invoices" ADD CONSTRAINT "quick_books_invoices_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_journal_entries" ADD CONSTRAINT "quick_books_journal_entries_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_oauth_credentials" ADD CONSTRAINT "quick_books_oauth_credentials_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_oauth_states" ADD CONSTRAINT "quick_books_oauth_states_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_payments" ADD CONSTRAINT "quick_books_payments_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_transactions" ADD CONSTRAINT "quick_books_transactions_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
+ALTER TABLE "quick_books_vendor_credits" ADD CONSTRAINT "quick_books_vendor_credits_company_id_fkey" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
 CREATE INDEX "accounts_user_id_idx" ON "accounts" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "plaid_transactions_bank_account_id_idx" ON "plaid_transactions" USING btree ("bank_account_id" text_ops);

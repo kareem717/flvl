@@ -50,9 +50,9 @@ export function SidebarUser({
             >
               <Avatar className="h-8 w-8 rounded-full" style={avatarStyle} />
               <div className="grid flex-1 text-left text-sm leading-tight">
-                {/* <span className="truncate font-semibold">
-                  {firstName} {lastName}
-                </span> */}
+                <span className="truncate font-semibold">
+                  {account.firstName} {account.lastName}
+                </span>
                 <span className="truncate text-xs">{account.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
@@ -68,9 +68,9 @@ export function SidebarUser({
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-full" style={avatarStyle} />
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  {/* <span className="truncate font-semibold">
-                    {firstName} {lastName}
-                  </span> */}
+                  <span className="truncate font-semibold">
+                    {account.firstName} {account.lastName}
+                  </span>
                   <span className="truncate text-xs">{account.email}</span>
                 </div>
               </div>

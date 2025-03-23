@@ -27,7 +27,9 @@ import { getTokenCached } from "@/app/actions/auth";
 interface CreateAccountFormProps
   extends Omit<ComponentPropsWithoutRef<"form">, "onSubmit"> {
   triggerProps?: ComponentPropsWithoutRef<typeof Button>;
-  email?: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
 }
 
 type CreateAccountFormValues = z.infer<typeof CreateAccountParamsSchema>;
@@ -36,6 +38,8 @@ export function CreateAccountForm({
   className,
   triggerProps,
   email,
+  firstName,
+  lastName,
   ...props
 }: CreateAccountFormProps) {
   const router = useRouter();
@@ -77,6 +81,8 @@ export function CreateAccountForm({
     resolver: zodResolver(CreateAccountParamsSchema),
     defaultValues: {
       email: email || "",
+      firstName: firstName || "",
+      lastName: lastName || "",
     },
   })
 
@@ -91,6 +97,40 @@ export function CreateAccountForm({
         className={cn("space-y-4", className)}
         {...props}
       >
+        <div className="flex flex-col gap-4 md:flex-row">
+          <FormField
+            control={form.control}
+            name="firstName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>First Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter your first name"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="lastName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Last Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter your email"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="email"

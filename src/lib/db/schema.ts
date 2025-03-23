@@ -131,6 +131,8 @@ export const accounts = pgTable(
     id: serial().primaryKey().notNull(),
     userId: text("user_id").notNull(),
     email: varchar({ length: 360 }).notNull(),
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "string" })
       .defaultNow()
       .notNull(),
@@ -166,7 +168,7 @@ export const companies = pgTable(
       columns: [table.ownerId],
       foreignColumns: [accounts.id],
       name: "companies_owner_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
   ],
 );
 
@@ -187,7 +189,7 @@ export const plaidCredentials = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "plaid_credentials_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
   ],
 );
 
@@ -216,7 +218,7 @@ export const plaidBankAccounts = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "plaid_bank_accounts_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     check(
       "plaid_bank_accounts_check",
       sql`((iso_currency_code IS NOT NULL) AND (unofficial_currency_code IS NULL)) OR ((iso_currency_code IS NULL) AND (unofficial_currency_code IS NOT NULL))`,
@@ -267,7 +269,7 @@ export const plaidTransactions = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "plaid_transactions_company_id_fkey",
-    }),
+    }).onDelete("restrict").onUpdate("cascade"),
     check(
       "plaid_transactions_check",
       sql`((personal_finance_category_primary IS NULL) AND (personal_finance_category_detailed IS NULL)) OR ((personal_finance_category_primary IS NOT NULL) AND (personal_finance_category_detailed IS NOT NULL))`,
@@ -300,7 +302,7 @@ export const quickBooksOauthCredentials = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_oauth_credentials_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
   ],
 );
 
@@ -321,7 +323,7 @@ export const quickBooksOauthStates = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_oauth_states_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
   ],
 );
 
@@ -342,7 +344,7 @@ export const quickBooksInvoices = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_invoices_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     unique("quick_books_invoices_remote_id_key").on(table.remoteId),
   ],
 );
@@ -364,7 +366,7 @@ export const quickBooksTransactions = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_transactions_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     unique("quick_books_transactions_remote_id_key").on(table.remoteId),
   ],
 );
@@ -386,7 +388,7 @@ export const quickBooksJournalEntries = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_journal_entries_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     unique("quick_books_journal_entries_remote_id_key").on(table.remoteId),
   ],
 );
@@ -408,7 +410,7 @@ export const quickBooksVendorCredits = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_vendor_credits_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     unique("quick_books_vendor_credits_remote_id_key").on(table.remoteId),
   ],
 );
@@ -430,7 +432,7 @@ export const quickBooksCreditNotes = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_credit_notes_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     unique("quick_books_credit_notes_remote_id_key").on(table.remoteId),
   ],
 );
@@ -452,7 +454,7 @@ export const quickBooksPayments = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_payments_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     unique("quick_books_payments_remote_id_key").on(table.remoteId),
   ],
 );
@@ -474,7 +476,7 @@ export const quickBooksAccounts = pgTable(
       columns: [table.companyId],
       foreignColumns: [companies.id],
       name: "quick_books_accounts_company_id_fkey",
-    }),
+    }).onDelete("cascade").onUpdate("cascade"),
     unique("quick_books_accounts_remote_id_key").on(table.remoteId),
   ],
 );

@@ -24,7 +24,7 @@ export function ModeToggle({
       type="single"
       onValueChange={setTheme}
       value={resolvedTheme}
-      className={cn("[&>*]:w-full", className)}
+      className={cn("[&>*]:w-full [&>*]:rounded-md gap-1", className)}
     >
       <ToggleGroupItem value="light" aria-label="Toggle light">
         <Sun className="h-4 w-4" />
